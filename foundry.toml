@@ -1,0 +1,14 @@
+[profile.default]
+src = 'contracts/src'
+test = 'contracts/test'
+script = 'contracts/script'
+out = 'contracts/out'
+broadcast = 'contracts/broadcast'
+cache_path = 'contracts/cache'
+libs = ['contracts/lib']
+auto_detect_remappings = true
+fs_permissions = [{ access = "read", path = "./"}]
+
+[rpc_endpoints]
+mainnet = "${MAINNET_URL}"
+local = "${LOCAL}"
