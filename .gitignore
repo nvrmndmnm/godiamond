@@ -1,0 +1,14 @@
+.vscode
+.env
+
+/contracts/broadcast
+/contracts/cache
+/contracts/lib
+/contracts/out
+
+/diamond-cli
+/*.test
+/build
+/output.log
+
+config.yaml
