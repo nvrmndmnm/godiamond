@@ -82,7 +82,7 @@ func main() {
 		err = loupe()
 
 	default:
-		sugar.Error("Error: No command specified")
+		sugar.Error("Error: no command specified")
 		pflag.Usage()
 	}
 
