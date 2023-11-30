@@ -19,6 +19,12 @@ type Arguments struct {
 	FlagDebug    bool
 }
 
+type CutArguments struct {
+	ValueCutFacetAddress   AddressFlag
+	ValueCutAction         uint8
+	ValueCutFacetSelectors ByteSlice
+}
+
 type DiamondBox struct {
 	DiamondCutFacet common.Address
 	Diamond         common.Address
@@ -28,13 +34,23 @@ type DiamondBox struct {
 
 func main() {
 	var args Arguments
+	var cutArgs CutArguments
+	var facetAddress string
 
 	pflag.Usage = PrintUsage
 	pflag.StringVarP(&args.ValueConfig, "config", "c", "config.yaml", "Load config file")
 	pflag.StringVarP(&args.ValueRPC, "rpc", "", "", "RPC identifier")
 	pflag.Int64Var(&args.ValueChainID, "chain-id", 0, "Chain id.")
 	pflag.BoolVarP(&args.FlagDebug, "debug", "d", false, "Enable debug mode")
+
+	pflag.StringVarP(&facetAddress, "facet-address", "", "", "Facet address to cut")
+	pflag.Uint8VarP(&cutArgs.ValueCutAction, "action", "", 0, "Action to perform on diamond")
+	pflag.Var(&cutArgs.ValueCutFacetSelectors, "selectors", "Function selectors to cut")
 	pflag.Parse()
+
+	if err := cutArgs.ValueCutFacetAddress.Set(facetAddress); err != nil {
+		log.Fatalf("Error parsing Ethereum address: %v", err)
+	}
 
 	logger, err := zap.NewProduction()
 	if err != nil {
@@ -76,7 +92,9 @@ func main() {
 		err = deploy(config, args.ValueRPC, args.ValueChainID)
 
 	case "cut":
-		err = cut()
+		err = cut(common.Address(cutArgs.ValueCutFacetAddress),
+			Action(cutArgs.ValueCutAction),
+			cutArgs.ValueCutFacetSelectors)
 
 	case "loupe":
 		err = loupe()
