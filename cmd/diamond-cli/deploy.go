@@ -1,96 +1,54 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"math/big"
-
 	"log"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/nvrmndmnm/godiamond/internal/contracts"
 )
 
-func deploy(config Config, rpcIdentifier string, chainId int64) (error) {
-	fmt.Println("deploy")
-	//init client
-	client, err := ethclient.Dial(config.RPC["local"])
+func (box *DiamondBox) deploy() error {
+	var tx *types.Transaction
+	var err error
+
+	box.diamondCutFacet, tx, _, err = contracts.DeployDiamondCutFacet(box.auth, box.client)
 	if err != nil {
 		return err
 	}
 
-	if chainId == 0 {
-		log.Println("chainId is 0")
-		networkId, err := client.NetworkID(context.Background())
-		if err != nil {
-			return err
-		}
+	log.Printf("DiamondCutFacet address: %s\ntx: %s",
+		box.diamondCutFacet.Hex(), tx.Hash().Hex())
 
-		chainId = networkId.Int64()
-	}
-	//init auth
-	privateKey, err := crypto.HexToECDSA(config.Accounts["anvil"].PrivateKey[2:])
+	owner := box.config.Accounts["global"].Address
+	box.diamond, tx, _, err = contracts.DeployDiamond(box.auth, box.client, owner, box.diamondCutFacet)
 	if err != nil {
 		return err
 	}
+	log.Printf("Diamond address: %s\ntx: %s",
+		box.diamond.Hex(), tx.Hash().Hex())
 
-	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(chainId))
+	box.diamondInit, tx, _, err = contracts.DeployDiamondInit(box.auth, box.client)
 	if err != nil {
 		return err
 	}
+	log.Printf("DiamondInit address: %s\ntx: %s",
+		box.diamondInit.Hex(), tx.Hash().Hex())
 
-	gasPrice, err := client.SuggestGasPrice(context.Background())
+	loupeAddress, tx, _, err := contracts.DeployDiamondLoupeFacet(box.auth, box.client)
 	if err != nil {
 		return err
 	}
+	box.facets = append(box.facets, loupeAddress)
+	log.Printf("DeployDiamondLoupeFacet address: %s\ntx: %s",
+		loupeAddress.Hex(), tx.Hash().Hex())
 
-	auth.GasPrice = gasPrice
-	fmt.Println(chainId)
-
-	//deploy DiamondCutFacet
-	address, tx, _, err := contracts.DeployDiamondCutFacet(auth, client)
+	ownershipAddress, tx, _, err := contracts.DeployOwnershipFacet(box.auth, box.client)
 	if err != nil {
 		return err
 	}
-	log.Printf("deployed DiamondCutFacet at address %s, tx %s",
-		address.Hex(), tx.Hash().Hex())
-
-	//deploy Diamond
-	owner := config.Accounts["global"].Address
-	cutfacet := address
-
-	address, tx, _, err = contracts.DeployDiamond(auth, client, owner, cutfacet)
-	if err != nil {
-		return err
-	}
-
-	log.Printf("deployed Diamond at address %s, tx %s",
-		address.Hex(), tx.Hash().Hex())
-
-	//deploy DiamondInit
-	address, tx, _, err = contracts.DeployDiamondInit(auth, client)
-	if err != nil {
-		return err
-	}
-	log.Printf("deployed DiamondInit at address %s, tx %s",
-		address.Hex(), tx.Hash().Hex())
-
-	//deploy facets
-	address, tx, _, err = contracts.DeployDiamondLoupeFacet(auth, client)
-	if err != nil {
-		return err
-	}
-	log.Printf("deployed DeployDiamondLoupeFacet at address %s, tx %s",
-		address.Hex(), tx.Hash().Hex())
-
-	address, tx, _, err = contracts.DeployOwnershipFacet(auth, client)
-	if err != nil {
-		return err
-	}
-	log.Printf("deployed DeployOwnershipFacet at address %s, tx %s",
-		address.Hex(), tx.Hash().Hex())
+	box.facets = append(box.facets, ownershipAddress)
+	log.Printf("DeployOwnershipFacet address: %s\ntx: %s",
+		ownershipAddress.Hex(), tx.Hash().Hex())
 
 	return nil
 }

@@ -13,6 +13,8 @@ type Config struct {
 	Accounts map[string]EOA `koanf:"eoa"`
 	RPC map[string]string `koanf:"rpc"`
 	Contracts struct {
-		DiamondContract common.Address `koanf:"diamond_contract"`
+		DiamondCutFacet common.Address `koanf:"cut_facet"`
+		Diamond common.Address `koanf:"diamond"`
+		DiamondInit common.Address `koanf:"diamond_init"`
 	} `koanf:"contracts"`
 }

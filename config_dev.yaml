@@ -9,3 +9,7 @@ rpc:
   "local": "http://localhost:8545"
   "alchemy": "https"
   "goerli": "https"
+contracts:
+  cut_facet: ""
+  diamond: ""
+  diamond_init: ""

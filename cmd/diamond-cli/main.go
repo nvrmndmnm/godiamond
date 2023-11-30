@@ -1,6 +1,7 @@
 package main
 
 import (
+	// "fmt"
 	"log"
 	"os"
 
@@ -25,32 +26,14 @@ type CutArguments struct {
 	ValueCutFacetSelectors ByteSlice
 }
 
-type DiamondBox struct {
-	DiamondCutFacet common.Address
-	Diamond         common.Address
-	DiamondInit     common.Address
-	Facets          []common.Address
-}
-
 func main() {
 	var args Arguments
-	var cutArgs CutArguments
-	var facetAddress string
 
 	pflag.Usage = PrintUsage
 	pflag.StringVarP(&args.ValueConfig, "config", "c", "config.yaml", "Load config file")
 	pflag.StringVarP(&args.ValueRPC, "rpc", "", "", "RPC identifier")
 	pflag.Int64Var(&args.ValueChainID, "chain-id", 0, "Chain id.")
 	pflag.BoolVarP(&args.FlagDebug, "debug", "d", false, "Enable debug mode")
-
-	pflag.StringVarP(&facetAddress, "facet-address", "", "", "Facet address to cut")
-	pflag.Uint8VarP(&cutArgs.ValueCutAction, "action", "", 0, "Action to perform on diamond")
-	pflag.Var(&cutArgs.ValueCutFacetSelectors, "selectors", "Function selectors to cut")
-	pflag.Parse()
-
-	if err := cutArgs.ValueCutFacetAddress.Set(facetAddress); err != nil {
-		log.Fatalf("Error parsing Ethereum address: %v", err)
-	}
 
 	logger, err := zap.NewProduction()
 	if err != nil {
@@ -72,6 +55,19 @@ func main() {
 		sugar.Fatalf("Error: failed to load config: %v", err)
 	}
 
+	diamondCutFacet := k.String("contracts.cut_facet")
+	if len(diamondCutFacet) == 0 {
+		k.Set("contracts.cut_facet", common.Address{})
+	}
+	diamond := k.String("contracts.diamond")
+	if len(diamond) == 0 {
+		k.Set("contracts.diamond", common.Address{})
+	}
+	diamondInit := k.String("contracts.diamond_init")
+	if len(diamondInit) == 0 {
+		k.Set("contracts.diamond_init", common.Address{})
+	}
+
 	var config Config
 	if err := k.Unmarshal("", &config); err != nil {
 		sugar.Fatalf("Error: failed to unmarshal config: %v", err)
@@ -82,16 +78,36 @@ func main() {
 		pflag.Usage()
 	}
 
-	if args.ValueRPC == "" {
-		sugar.Error("Error: the rpc flag is required")
-		pflag.Usage()
+	//TODO: decide if rpc is needed to be an argument
+	// if args.ValueRPC == "" {
+	// 	sugar.Error("Error: the rpc flag is required")
+	// 	pflag.Usage()
+	// }
+
+	box, err := NewDiamondBox(config, "local", 0)
+	if err != nil {
+		sugar.Error("Error: couldn't fill the box with treasures")
 	}
+
+	defer box.Close()
 
 	switch os.Args[1] {
 	case "deploy":
-		err = deploy(config, args.ValueRPC, args.ValueChainID)
+		err = box.deploy()
 
 	case "cut":
+		var cutArgs CutArguments
+		var facetAddress string
+		
+		pflag.StringVarP(&facetAddress, "facet-address", "", "", "Facet address to cut")
+		pflag.Uint8VarP(&cutArgs.ValueCutAction, "action", "", 0, "Action to perform on diamond")
+		pflag.Var(&cutArgs.ValueCutFacetSelectors, "selectors", "Function selectors to cut")
+		pflag.Parse()
+
+		if err := cutArgs.ValueCutFacetAddress.Set(facetAddress); err != nil {
+			log.Fatalf("Error parsing Ethereum address: %v", err)
+		}
+
 		err = cut(common.Address(cutArgs.ValueCutFacetAddress),
 			Action(cutArgs.ValueCutAction),
 			cutArgs.ValueCutFacetSelectors)
