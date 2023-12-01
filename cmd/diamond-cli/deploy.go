@@ -19,7 +19,7 @@ func (box *DiamondBox) deploy() error {
 	log.Printf("DiamondCutFacet address: %s\ntx: %s",
 		box.diamondCutFacet.Hex(), tx.Hash().Hex())
 
-	owner := box.config.Accounts["global"].Address
+	owner := box.config.Accounts["anvil"].Address
 	box.diamond, tx, _, err = contracts.DeployDiamond(box.auth, box.client, owner, box.diamondCutFacet)
 	if err != nil {
 		return err

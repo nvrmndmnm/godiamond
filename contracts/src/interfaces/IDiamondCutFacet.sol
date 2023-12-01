@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-interface IDiamondCut {
+interface IDiamondCutFacet {
     enum FacetCutAction {Add, Replace, Remove}
     // Add=0, Replace=1, Remove=2
 

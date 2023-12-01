@@ -98,7 +98,7 @@ func main() {
 	case "cut":
 		var cutArgs CutArguments
 		var facetAddress string
-		
+
 		pflag.StringVarP(&facetAddress, "facet-address", "", "", "Facet address to cut")
 		pflag.Uint8VarP(&cutArgs.ValueCutAction, "action", "", 0, "Action to perform on diamond")
 		pflag.Var(&cutArgs.ValueCutFacetSelectors, "selectors", "Function selectors to cut")
@@ -108,7 +108,7 @@ func main() {
 			log.Fatalf("Error parsing Ethereum address: %v", err)
 		}
 
-		err = cut(common.Address(cutArgs.ValueCutFacetAddress),
+		err = box.cut(common.Address(cutArgs.ValueCutFacetAddress),
 			Action(cutArgs.ValueCutAction),
 			cutArgs.ValueCutFacetSelectors)
 

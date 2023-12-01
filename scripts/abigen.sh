@@ -18,9 +18,18 @@ find $src -type f -name "*.sol" \
     n=$name
     declare -l n
 
-    abigen --abi $out/$name.sol/$name.abi.json \
-        --bin $out/$name.sol/$name.bin \
-        --pkg contracts \
-        --type $name \
-        --out internal/contracts/$n.go
+    if [ "$name" != "Diamond" ]; then \
+        abigen --abi $out/$name.sol/$name.abi.json \
+            --bin $out/$name.sol/$name.bin \
+            --pkg contracts \
+            --type $name \
+            --out internal/contracts/$n.go;
+    else \
+        abigen --abi $out/$name.sol/$name.abi.json \
+                --bin $out/$name.sol/$name.bin \
+                --pkg contracts \
+                --type $name \
+                --exc IDiamondCutFacetFacetCut \
+                --out internal/contracts/$n.go;
+    fi
 done
