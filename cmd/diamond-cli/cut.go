@@ -19,9 +19,9 @@ const (
 )
 
 func (box *DiamondBox) cut(facetAddress common.Address, action Action, selectors [][4]byte) error {
-	var cut []contracts.IDiamondCutFacetFacetCut
+	var cut []contracts.IDiamondCutFacetCut
 
-	cut = append(cut, contracts.IDiamondCutFacetFacetCut{
+	cut = append(cut, contracts.IDiamondCutFacetCut{
 		FacetAddress:      facetAddress,
 		Action:            uint8(action),
 		FunctionSelectors: selectors,

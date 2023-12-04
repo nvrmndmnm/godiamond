@@ -5,6 +5,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/nvrmndmnm/godiamond/internal/contracts"
+	"github.com/nvrmndmnm/godiamond/internal/diamond"
 )
 
 func (box *DiamondBox) deploy() error {
@@ -20,7 +21,7 @@ func (box *DiamondBox) deploy() error {
 		box.diamondCutFacet.Hex(), tx.Hash().Hex())
 
 	owner := box.config.Accounts["anvil"].Address
-	box.diamond, tx, _, err = contracts.DeployDiamond(box.auth, box.client, owner, box.diamondCutFacet)
+	box.diamond, tx, _, err = diamond.DeployDiamond(box.auth, box.client, owner, box.diamondCutFacet)
 	if err != nil {
 		return err
 	}

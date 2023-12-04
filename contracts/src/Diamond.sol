@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import { LibDiamond } from "./libraries/LibDiamond.sol";
-import { IDiamondCutFacet } from "./interfaces/IDiamondCutFacet.sol";
+import { IDiamondCut } from "./interfaces/IDiamondCut.sol";
 
 contract Diamond {    
 
@@ -10,12 +10,12 @@ contract Diamond {
         LibDiamond.setContractOwner(_contractOwner);
 
         // Add the diamondCut external function from the diamondCutFacet
-        IDiamondCutFacet.FacetCut[] memory cut = new IDiamondCutFacet.FacetCut[](1);
+        IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
         bytes4[] memory functionSelectors = new bytes4[](1);
-        functionSelectors[0] = IDiamondCutFacet.diamondCut.selector;
-        cut[0] = IDiamondCutFacet.FacetCut({
+        functionSelectors[0] = IDiamondCut.diamondCut.selector;
+        cut[0] = IDiamondCut.FacetCut({
             facetAddress: _diamondCutFacet, 
-            action: IDiamondCutFacet.FacetCutAction.Add, 
+            action: IDiamondCut.FacetCutAction.Add, 
             functionSelectors: functionSelectors
         });
         LibDiamond.diamondCut(cut, address(0), "");        

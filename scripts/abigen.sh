@@ -5,6 +5,9 @@ forge build --extra-output-files abi metadata --force
 src=contracts/src
 out=contracts/out
 
+mkdir -p internal/diamond
+mkdir -p internal/contracts 
+
 find $src -type f -name "*.sol" \
  -not -path "*/interfaces/*" \
  -not -path "*/libraries/*" \
@@ -27,9 +30,9 @@ find $src -type f -name "*.sol" \
     else \
         abigen --abi $out/$name.sol/$name.abi.json \
                 --bin $out/$name.sol/$name.bin \
-                --pkg contracts \
+                --pkg diamond \
                 --type $name \
-                --exc IDiamondCutFacetFacetCut \
-                --out internal/contracts/$n.go;
+                --exc IDiamondCut \
+                --out internal/diamond/$n.go;
     fi
 done
