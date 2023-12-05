@@ -1,7 +1,7 @@
 package main
 
 import (
-	// "fmt"
+	"fmt"
 	"log"
 	"os"
 
@@ -105,7 +105,7 @@ func main() {
 		pflag.Parse()
 
 		if err := cutArgs.ValueCutFacetAddress.Set(facetAddress); err != nil {
-			log.Fatalf("Error parsing Ethereum address: %v", err)
+			sugar.Fatalf("Error parsing Ethereum address: %v", err)
 		}
 
 		err = box.cut(common.Address(cutArgs.ValueCutFacetAddress),
@@ -141,5 +141,5 @@ Options:
     -h --help                       Show help
 
 `
-	log.Print(usage)
+	fmt.Print(usage)
 }
