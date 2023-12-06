@@ -13,7 +13,7 @@ type AddressFlag common.Address
 
 func (b *SelectorFlag) String() string {
 	var result []string
-	
+
 	for _, item := range *b {
 		result = append(result, fmt.Sprintf("%#v", item))
 	}
@@ -23,11 +23,11 @@ func (b *SelectorFlag) String() string {
 
 func (b *SelectorFlag) Set(value string) error {
 	trimmedValue := strings.TrimSpace(value)
-	trimmedValue = strings.TrimPrefix(trimmedValue, "0x")
-	
+
 	values := strings.Split(trimmedValue, ",")
 
 	for _, v := range values {
+		v = strings.TrimPrefix(v, "0x")
 		decoded, err := hex.DecodeString(strings.TrimSpace(v))
 
 		if err != nil {
@@ -35,7 +35,7 @@ func (b *SelectorFlag) Set(value string) error {
 		}
 
 		if len(decoded) != 4 {
-			return fmt.Errorf("each value must be a 4-byte array")
+			return fmt.Errorf("selector value must be a 4-byte array")
 		}
 
 		*b = append(*b, [4]byte(decoded))
