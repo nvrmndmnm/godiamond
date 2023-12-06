@@ -23,7 +23,7 @@ type Arguments struct {
 type CutArguments struct {
 	ValueCutFacetAddress   AddressFlag
 	ValueCutAction         uint8
-	ValueCutFacetSelectors ByteSlice
+	ValueCutFacetSelectors SelectorFlag
 }
 
 func main() {
