@@ -6,8 +6,14 @@ import (
 	"strings"
 
 	"github.com/c-bata/go-prompt"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/nvrmndmnm/godiamond/internal/contracts"
 	"github.com/spf13/pflag"
 )
+
+type SelectorsMetadata map[string]string
 
 func printLoupeUsage() {
 	var usage = `
@@ -55,16 +61,46 @@ func completer(d prompt.Document) []prompt.Suggest {
 	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
 }
 
-func executor(s string) {
+func (box *DiamondBox) executor(s string) {
 	s = strings.TrimSpace(s)
 	args := strings.Split(s, " ")
 
+	loupe, err := contracts.NewDiamondLoupeFacet(box.diamond, box.client)
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	switch args[0] {
 	case "facets":
-		fmt.Printf("facets result:\n")
+		facets, err := loupe.Facets(&bind.CallOpts{})
+		if err != nil {
+			fmt.Println("Error: getting facets of a diamond", err)
+		}
+
+		for _, facet := range facets {
+			fmt.Printf("facet address: %v\n", facet.FacetAddress)
+
+			selectorsMetadata, err := getSelectorsMetadata(facet.FunctionSelectors)
+			if err != nil {
+				fmt.Println("Error: could not retrieve selector metadata", err)
+				return
+			}
+			for selector, functionName := range selectorsMetadata {
+				fmt.Printf("\t%s: %s \n", selector, functionName)
+			}
+
+			fmt.Println()
+		}
 
 	case "addresses":
-		fmt.Printf("addresses result:\n")
+		facetAddreses, err := loupe.FacetAddresses(&bind.CallOpts{})
+		if err != nil {
+			fmt.Println("Error: getting addresses of the facets", err)
+		}
+
+		for _, address := range facetAddreses {
+			fmt.Println(address.String())
+		}
 
 	case "facet-selectors":
 		var facetAddress AddressFlag
@@ -84,7 +120,20 @@ func executor(s string) {
 			return
 		}
 
-		fmt.Printf("facet-selectors result: %v\n", facetAddress)
+		facetSelectors, err := loupe.FacetFunctionSelectors(&bind.CallOpts{},
+			common.Address(facetAddress))
+		if err != nil {
+			fmt.Println("Error: getting facet selectors", err)
+		}
+
+		selectorsMetadata, err := getSelectorsMetadata(facetSelectors)
+		if err != nil {
+			fmt.Println("Error: could not retrieve selector metadata", err)
+			return
+		}
+		for selector, functionName := range selectorsMetadata {
+			fmt.Printf("\t%s: %s \n", selector, functionName)
+		}
 
 	case "facet-address":
 		var functionSelector SelectorFlag
@@ -101,9 +150,20 @@ func executor(s string) {
 
 		if err := functionSelector.Set(selectorString); err != nil {
 			fmt.Printf("Error: invalid selector format: %v\n", err)
+			return
 		}
 
-		fmt.Printf("facet-address result: %v\n", functionSelector)
+		if len(functionSelector) > 1 {
+			fmt.Println("Error: provide a single selector")
+			return
+		}
+
+		selector := [4]byte(functionSelector[0])
+		facetAddress, err := loupe.FacetAddress(&bind.CallOpts{}, selector)
+		if err != nil {
+			fmt.Println("Error: getting facet address", err)
+		}
+		fmt.Println("facet address: ", facetAddress.String())
 
 	case "help":
 		printLoupeUsage()
@@ -117,10 +177,22 @@ func executor(s string) {
 	}
 }
 
-func loupe() error {
+func getSelectorsMetadata(selectors [][4]byte) (SelectorsMetadata, error) {
+	metadata := make(SelectorsMetadata)
+	for _, selector := range selectors {
+		selectorString := hexutil.Encode(selector[:])
+		// TODO: Since there is no easy way to retrieve the function signature from the
+		// selector, a persistent metadata of every contract deployment is needed
+		functionName := "TBD"
+		metadata[selectorString] = functionName
+	}
+	return metadata, nil
+}
+
+func (box *DiamondBox) loupe() error {
 	fmt.Println("Please enter a command. Type 'exit' to quit.")
 	p := prompt.New(
-		executor,
+		box.executor,
 		completer,
 		prompt.OptionPrefix("> "),
 		prompt.OptionTitle("loupe"),

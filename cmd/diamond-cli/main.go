@@ -113,7 +113,7 @@ func main() {
 			cutArgs.ValueCutFacetSelectors)
 
 	case "loupe":
-		err = loupe()
+		err = box.loupe()
 
 	default:
 		sugar.Error("Error: no command specified")
