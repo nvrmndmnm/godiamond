@@ -20,12 +20,6 @@ type Arguments struct {
 	FlagDebug    bool
 }
 
-type CutArguments struct {
-	ValueCutFacetAddress   AddressFlag
-	ValueCutAction         uint8
-	ValueCutFacetSelectors SelectorFlag
-}
-
 func main() {
 	var args Arguments
 
@@ -96,21 +90,7 @@ func main() {
 		err = box.deploy()
 
 	case "cut":
-		var cutArgs CutArguments
-		var facetAddress string
-
-		pflag.StringVarP(&facetAddress, "facet-address", "", "", "Facet address to cut")
-		pflag.Uint8VarP(&cutArgs.ValueCutAction, "action", "", 0, "Action to perform on diamond")
-		pflag.Var(&cutArgs.ValueCutFacetSelectors, "selectors", "Function selectors to cut")
-		pflag.Parse()
-
-		if err := cutArgs.ValueCutFacetAddress.Set(facetAddress); err != nil {
-			sugar.Fatalf("Error parsing Ethereum address: %v", err)
-		}
-
-		err = box.cut(common.Address(cutArgs.ValueCutFacetAddress),
-			Action(cutArgs.ValueCutAction),
-			cutArgs.ValueCutFacetSelectors)
+		err = box.cut()
 
 	case "loupe":
 		err = box.loupe()

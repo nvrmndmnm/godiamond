@@ -17,7 +17,7 @@ type SelectorsMetadata map[string]string
 
 func printLoupeUsage() {
 	var usage = `
-The loupe commands are:
+Commands:
     facets                        Show all facets and their selectors
     addresses                     Show all facet addresses used by a diamond
     facet-selectors <address>     Show all function selectors provided by a facet
@@ -25,14 +25,14 @@ The loupe commands are:
     help                          Show help
     exit                          Exit the loupe mode
 
-The arguments are:
+Arguments:
     --address           string    Ethereum address of the facet
     --selector          string    4-byte function selector representation 
 `
 	fmt.Print(usage)
 }
 
-func completer(d prompt.Document) []prompt.Suggest {
+func loupeCompleter(d prompt.Document) []prompt.Suggest {
 	s := []prompt.Suggest{
 		{Text: "facets", Description: "Show all facets and their selectors"},
 		{Text: "addresses", Description: "Show all facet addresses used by a diamond"},
@@ -65,7 +65,7 @@ func completer(d prompt.Document) []prompt.Suggest {
 	return []prompt.Suggest{}
 }
 
-func (box *DiamondBox) executor(s string) {
+func (box *DiamondBox) loupeExecutor(s string) {
 	s = strings.TrimSpace(s)
 	args := strings.Split(s, " ")
 
@@ -196,8 +196,8 @@ func getSelectorsMetadata(selectors [][4]byte) (SelectorsMetadata, error) {
 func (box *DiamondBox) loupe() error {
 	fmt.Println("Please enter a command. Type 'exit' to quit.")
 	p := prompt.New(
-		box.executor,
-		completer,
+		box.loupeExecutor,
+		loupeCompleter,
 		prompt.OptionPrefix("> "),
 		prompt.OptionTitle("loupe"),
 		prompt.OptionMaxSuggestion(4),
