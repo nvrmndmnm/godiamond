@@ -26,7 +26,7 @@ The loupe commands are:
     exit                          Exit the loupe mode
 
 The arguments are:
-    --address           string    Ethereum address of a facet
+    --address           string    Ethereum address of the facet
     --selector          string    4-byte function selector representation 
 `
 	fmt.Print(usage)
@@ -44,21 +44,25 @@ func completer(d prompt.Document) []prompt.Suggest {
 
 	args := strings.Split(d.Text, " ")
 
-	if len(args) > 1 {
+	if len(args) <= 1 {
+		return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
+	}
+
+	if len(args) == 2 {
 		switch args[0] {
 		case "facet-selectors":
-			s = []prompt.Suggest{
+			return []prompt.Suggest{
 				{Text: "--address=", Description: "Specify the Ethereum address of a facet"},
 			}
 
 		case "facet-address":
-			s = []prompt.Suggest{
+			return []prompt.Suggest{
 				{Text: "--selector=", Description: "Specify the function selector"},
 			}
 		}
 	}
 
-	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
+	return []prompt.Suggest{}
 }
 
 func (box *DiamondBox) executor(s string) {
