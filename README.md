@@ -1,17 +1,17 @@
 # Go Diamond
 
-# Introduction
+## Introduction
 
 Go Diamond is a CLI-tool for interacting with Diamond smart contracts based on the [ERC-2535 standard](https://eips.ethereum.org/EIPS/eip-2535). Built with Go and Foundry, it simplifies the deployment, management, and inspection of Diamond proxy contracts without requiring in-depth knowledge of the standard.  
 _The use of Javascript in this project is deliberately avoided by all means._
 
-# Features
+## Features
 
 1. Deploy: deploy new Diamond contracts with initial facets and function selectors.
 2. Cut: Add, replace, and remove facets in a Diamond contract.
 3. Loupe: Inspect a Diamond contract and its facets.
 
-# Getting Started
+## Getting Started
 Ensure to have Go and Foundry installed and configured.
 
 **Clone the Repository:**
@@ -30,7 +30,7 @@ go mod download
 go build -o diamond-cli ./cmd/diamond-cli/
 ```
 
-# Usage
+## Usage
 **CLI**
 ```
 Usage:
@@ -78,9 +78,9 @@ Arguments:
     --selector          string    4-byte function selector representation 
 ```
 
-# Examples
+## Examples
 
-# Testing
+## Testing
 
 Run Go tests:
 ```bash
@@ -93,7 +93,7 @@ forge test
 ```
 
 
-# Disclaimer
+## Disclaimer
 The project is under active development at the moment. Feedback and contributions are welcome.
 
 For more information on Diamonds refer to [Awesome Diamonds](https://github.com/mudgen/awesome-diamonds).  
