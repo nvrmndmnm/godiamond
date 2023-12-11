@@ -42,7 +42,7 @@ func cutCompleter(d prompt.Document) []prompt.Suggest {
 		{Text: "replace", Description: "Replace selectors of an existing facet"},
 		{Text: "remove", Description: "Remove selectors from the diamond"},
 		{Text: "help", Description: "Show help message"},
-		{Text: "exit", Description: "Exit the cut interactive mode"},
+		{Text: "exit", Description: "Exit the cut mode"},
 	}
 
 	args := strings.Split(d.Text, " ")

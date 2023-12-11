@@ -99,4 +99,4 @@ The project is under active development at the moment. Feedback and contribution
 For more information on Diamonds refer to [Awesome Diamonds](https://github.com/mudgen/awesome-diamonds).  
 Big props to [Nick Mudge](https://github.com/mudgen/) for such a beautiful idea and implementation.
 
-Licensed under the [MIT License](LICENSE.md).
+Licensed under the [MIT License](LICENSE).
