@@ -158,25 +158,3 @@ func writeDeploymentDataToFile(data *DeploymentData) {
 		log.Fatal("Error writing deployment data", err)
 	}
 }
-
-func (box *DiamondBox) deploy() error {
-	fmt.Println("Please enter a command. Type 'exit' to quit.")
-	p := prompt.New(
-		box.deployExecutor,
-		deployCompleter,
-		prompt.OptionPrefix("> "),
-		prompt.OptionTitle("deploy"),
-		prompt.OptionMaxSuggestion(4),
-		prompt.OptionSuggestionBGColor(prompt.Black),
-		prompt.OptionSuggestionTextColor(prompt.LightGray),
-		prompt.OptionDescriptionBGColor(prompt.Black),
-		prompt.OptionDescriptionTextColor(prompt.LightGray),
-		prompt.OptionSelectedSuggestionBGColor(prompt.Black),
-		prompt.OptionSelectedSuggestionTextColor(prompt.White),
-		prompt.OptionSelectedDescriptionBGColor(prompt.Black),
-		prompt.OptionSelectedDescriptionTextColor(prompt.White),
-		prompt.OptionScrollbarBGColor(prompt.Black),
-	)
-	p.Run()
-	return nil
-}

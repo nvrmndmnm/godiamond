@@ -173,25 +173,3 @@ func (box *DiamondBox) cutExecutor(s string) {
 		fmt.Printf("Unknown command: %s\n", s)
 	}
 }
-
-func (box *DiamondBox) cut() error {
-	fmt.Println("Please enter a command. Type 'exit' to quit.")
-	p := prompt.New(
-		box.cutExecutor,
-		cutCompleter,
-		prompt.OptionPrefix("> "),
-		prompt.OptionTitle("cut"),
-		prompt.OptionMaxSuggestion(4),
-		prompt.OptionSuggestionBGColor(prompt.Black),
-		prompt.OptionSuggestionTextColor(prompt.LightGray),
-		prompt.OptionDescriptionBGColor(prompt.Black),
-		prompt.OptionDescriptionTextColor(prompt.LightGray),
-		prompt.OptionSelectedSuggestionBGColor(prompt.Black),
-		prompt.OptionSelectedSuggestionTextColor(prompt.White),
-		prompt.OptionSelectedDescriptionBGColor(prompt.Black),
-		prompt.OptionSelectedDescriptionTextColor(prompt.White),
-		prompt.OptionScrollbarBGColor(prompt.Black),
-	)
-	p.Run()
-	return nil
-}

@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/c-bata/go-prompt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
@@ -18,20 +19,69 @@ type Arguments struct {
 	ValueConfig  string
 	ValueChainID int64
 	FlagDebug    bool
+	FlagHelp     bool
+}
+
+func printUsage() {
+	var usage = "diamond-cli" + `
+
+Usage:
+    diamond-cli deploy [options]
+    diamond-cli cut [options]
+    diamond-cli loupe [options]
+
+Options:
+    --rpc <name>          string    RPC identifier
+    --chain-id <id>       int       Chain ID (default: 0)
+    -c --config <path>    string    Load config file (default: "config.yaml")
+    -d --debug                      Enable debug mode (default: disabled)
+    -h --help                       Show help
+
+`
+	fmt.Print(usage)
+}
+
+func runMode(mode string, exectutor prompt.Executor, completer prompt.Completer) {
+	fmt.Println("Please enter a command. Type 'exit' to quit.")
+	p := prompt.New(
+		exectutor,
+		completer,
+		prompt.OptionPrefix("> "),
+		prompt.OptionTitle(mode),
+		prompt.OptionMaxSuggestion(4),
+		prompt.OptionSuggestionBGColor(prompt.Black),
+		prompt.OptionSuggestionTextColor(prompt.LightGray),
+		prompt.OptionDescriptionBGColor(prompt.Black),
+		prompt.OptionDescriptionTextColor(prompt.LightGray),
+		prompt.OptionSelectedSuggestionBGColor(prompt.Black),
+		prompt.OptionSelectedSuggestionTextColor(prompt.White),
+		prompt.OptionSelectedDescriptionBGColor(prompt.Black),
+		prompt.OptionSelectedDescriptionTextColor(prompt.White),
+		prompt.OptionScrollbarBGColor(prompt.Black),
+	)
+	p.Run()
 }
 
 func main() {
 	var args Arguments
 
-	pflag.Usage = PrintUsage
+	pflag.Usage = printUsage
 	pflag.StringVarP(&args.ValueConfig, "config", "c", "config.yaml", "Load config file")
 	pflag.StringVarP(&args.ValueRPC, "rpc", "", "", "RPC identifier")
 	pflag.Int64Var(&args.ValueChainID, "chain-id", 0, "Chain id.")
 	pflag.BoolVarP(&args.FlagDebug, "debug", "d", false, "Enable debug mode")
+	pflag.BoolVarP(&args.FlagHelp, "help", "h", false, "Show help")
+
+	pflag.Parse()
 
 	logger, err := zap.NewProduction()
 	if err != nil {
 		log.Fatalf("Error: failed to initialize logger: %v", err)
+	}
+
+	if args.FlagHelp {
+		pflag.Usage()
+		return
 	}
 
 	if args.FlagDebug {
@@ -87,39 +137,16 @@ func main() {
 
 	switch os.Args[1] {
 	case "deploy":
-		err = box.deploy()
+		runMode("deploy", box.deployExecutor, deployCompleter)
 
 	case "cut":
-		err = box.cut()
+		runMode("cut", box.cutExecutor, cutCompleter)
 
 	case "loupe":
-		err = box.loupe()
+		runMode("loupe", box.loupeExecutor, loupeCompleter)
 
 	default:
 		sugar.Error("Error: no command specified")
 		pflag.Usage()
 	}
-
-	if err != nil {
-		sugar.Fatal(err)
-	}
-}
-
-func PrintUsage() {
-	var usage = "diamond-cli" + `
-
-Usage:
-    diamond-cli deploy [options]
-    diamond-cli cut [options]
-    diamond-cli loupe [options]
-
-Options:
-    --rpc <name>          string    RPC identifier
-    --chain-id <id>       int       Chain ID (default: 0)
-    -c --config <path>    string    Load config file (default: "config.yaml")
-    -d --debug                      Enable debug mode (default: disabled)
-    -h --help                       Show help
-
-`
-	fmt.Print(usage)
 }
