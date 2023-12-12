@@ -8,6 +8,10 @@ cache_path = 'contracts/cache'
 libs = ['contracts/lib']
 auto_detect_remappings = true
 fs_permissions = [{ access = "read", path = "./"}]
+remappings = [
+    "@ds-test/=contracts/lib/forge-std/lib/ds-test/src/",
+    "@forge-std/=contracts/lib/forge-std/src/"
+]
 
 [rpc_endpoints]
 mainnet = "${MAINNET_URL}"
