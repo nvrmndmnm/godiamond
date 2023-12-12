@@ -6,7 +6,7 @@ src=contracts/src
 out=contracts/out
 
 mkdir -p internal/diamond
-mkdir -p internal/contracts 
+mkdir -p internal/facets 
 
 find $src -type f -name "*.sol" \
  -not -path "*/interfaces/*" \
@@ -24,9 +24,9 @@ find $src -type f -name "*.sol" \
     if [ "$name" != "Diamond" ]; then \
         abigen --abi $out/$name.sol/$name.abi.json \
             --bin $out/$name.sol/$name.bin \
-            --pkg contracts \
+            --pkg facets \
             --type $name \
-            --out internal/contracts/$n.go;
+            --out internal/facets/$n.go;
     else \
         abigen --abi $out/$name.sol/$name.abi.json \
                 --bin $out/$name.sol/$name.bin \

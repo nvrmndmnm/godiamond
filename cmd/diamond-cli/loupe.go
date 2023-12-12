@@ -9,7 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/nvrmndmnm/godiamond/internal/contracts"
+	"github.com/nvrmndmnm/godiamond/internal/facets"
 	"github.com/spf13/pflag"
 )
 
@@ -69,7 +69,7 @@ func (box *DiamondBox) loupeExecutor(s string) {
 	s = strings.TrimSpace(s)
 	args := strings.Split(s, " ")
 
-	loupe, err := contracts.NewDiamondLoupeFacet(box.diamond, box.client)
+	loupe, err := facets.NewDiamondLoupeFacet(box.diamond, box.client)
 	if err != nil {
 		fmt.Println(err)
 	}

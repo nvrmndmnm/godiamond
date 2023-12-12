@@ -8,7 +8,7 @@ import (
 	"github.com/c-bata/go-prompt"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/nvrmndmnm/godiamond/internal/contracts"
+	"github.com/nvrmndmnm/godiamond/internal/facets"
 	"github.com/spf13/pflag"
 )
 
@@ -91,12 +91,12 @@ func (box *DiamondBox) cutExecutor(s string) {
 	s = strings.TrimSpace(s)
 	args := strings.Split(s, " ")
 
-	diamondCut, err := contracts.NewDiamondCutFacet(box.diamond, box.client)
+	diamondCut, err := facets.NewDiamondCutFacet(box.diamond, box.client)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	abiInstance, err := abi.JSON(strings.NewReader(contracts.DiamondInitABI))
+	abiInstance, err := abi.JSON(strings.NewReader(facets.DiamondInitABI))
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -106,7 +106,7 @@ func (box *DiamondBox) cutExecutor(s string) {
 		fmt.Println(err)
 	}
 
-	var cut []contracts.IDiamondCutFacetCut
+	var cut []facets.IDiamondCutFacetCut
 
 	switch args[0] {
 	case "add", "replace", "remove":
@@ -148,7 +148,7 @@ func (box *DiamondBox) cutExecutor(s string) {
 			action = Remove
 		}
 
-		cut = append(cut, contracts.IDiamondCutFacetCut{
+		cut = append(cut, facets.IDiamondCutFacetCut{
 			FacetAddress:      common.Address(facetAddress),
 			Action:            uint8(action),
 			FunctionSelectors: functionSelectors,

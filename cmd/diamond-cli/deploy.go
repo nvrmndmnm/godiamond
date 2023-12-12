@@ -10,7 +10,7 @@ import (
 	"github.com/c-bata/go-prompt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/nvrmndmnm/godiamond/internal/contracts"
+	"github.com/nvrmndmnm/godiamond/internal/facets"
 	"github.com/nvrmndmnm/godiamond/internal/diamond"
 )
 
@@ -76,7 +76,7 @@ func (box *DiamondBox) deployExecutor(s string) {
 	case "facet":
 		fmt.Println("facet")
 	case "init":
-		box.diamondCutFacet, tx, _, err = contracts.DeployDiamondCutFacet(box.auth, box.client)
+		box.diamondCutFacet, tx, _, err = facets.DeployDiamondCutFacet(box.auth, box.client)
 		if err != nil {
 			fmt.Println("Error: deploy diamond cut facet")
 			return
@@ -97,7 +97,7 @@ func (box *DiamondBox) deployExecutor(s string) {
 		log.Printf("Diamond address: %s\ntx: %s",
 			box.diamond.Hex(), tx.Hash().Hex())
 
-		box.diamondInit, tx, _, err = contracts.DeployDiamondInit(box.auth, box.client)
+		box.diamondInit, tx, _, err = facets.DeployDiamondInit(box.auth, box.client)
 		if err != nil {
 			fmt.Println("Error: deploy diamond init")
 			return
@@ -107,7 +107,7 @@ func (box *DiamondBox) deployExecutor(s string) {
 		log.Printf("DiamondInit address: %s\ntx: %s",
 			box.diamondInit.Hex(), tx.Hash().Hex())
 
-		loupeAddress, tx, _, err := contracts.DeployDiamondLoupeFacet(box.auth, box.client)
+		loupeAddress, tx, _, err := facets.DeployDiamondLoupeFacet(box.auth, box.client)
 		if err != nil {
 			fmt.Println("Error: deploy diamond loupe facet")
 			return
@@ -118,7 +118,7 @@ func (box *DiamondBox) deployExecutor(s string) {
 		log.Printf("DiamondLoupeFacet address: %s\ntx: %s",
 			loupeAddress.Hex(), tx.Hash().Hex())
 
-		ownershipAddress, tx, _, err := contracts.DeployOwnershipFacet(box.auth, box.client)
+		ownershipAddress, tx, _, err := facets.DeployOwnershipFacet(box.auth, box.client)
 		if err != nil {
 			fmt.Println("Error: deploy ownership facet")
 			return
