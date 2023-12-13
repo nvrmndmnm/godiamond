@@ -53,12 +53,7 @@ func cutCompleter(d prompt.Document) []prompt.Suggest {
 
 	if len(args) == 2 {
 		switch args[0] {
-		case "add":
-			return []prompt.Suggest{
-				{Text: "--address=", Description: "Specify the Ethereum address of a facet"},
-			}
-
-		case "replace":
+		case "add", "replace":
 			return []prompt.Suggest{
 				{Text: "--address=", Description: "Specify the Ethereum address of a facet"},
 			}
@@ -72,12 +67,7 @@ func cutCompleter(d prompt.Document) []prompt.Suggest {
 
 	if len(args) == 3 {
 		switch args[0] {
-		case "add":
-			return []prompt.Suggest{
-				{Text: "--selectors=", Description: "Specify the function selectors"},
-			}
-
-		case "replace":
+		case "add", "replace":
 			return []prompt.Suggest{
 				{Text: "--selectors=", Description: "Specify the function selectors"},
 			}

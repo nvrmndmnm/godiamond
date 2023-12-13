@@ -1,6 +1,6 @@
 #!/bin/bash
 
-forge build --extra-output-files abi metadata --force
+forge build --extra-output-files abi metadata --skip script --force
 
 src=contracts/src
 out=contracts/out
