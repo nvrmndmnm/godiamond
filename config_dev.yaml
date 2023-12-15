@@ -10,6 +10,15 @@ rpc:
   "alchemy": "https"
   "goerli": "https"
 contracts:
-  cut_facet: ""
-  diamond: ""
-  diamond_init: ""
+  diamond: 
+    address: "0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE"
+    metadata: "./contracts/out/Diamond.sol/Diamond.json"
+  diamond_init:
+    address: "0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE"
+    metadata: "./contracts/out/DiamondInit.sol/DiamondInit.json"
+  cut_facet:
+    address: "0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE"
+    metadata: "./contracts/out/DiamondCutFacet.sol/DiamondCutFacet.json"
+  loupe_facet:
+    address: "0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE"
+    metadata: "./contracts/out/DiamondLoupeFacet.sol/DiamondLoupeFacet.json"

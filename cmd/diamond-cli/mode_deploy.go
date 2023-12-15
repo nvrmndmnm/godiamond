@@ -1,20 +1,13 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
 	"github.com/c-bata/go-prompt"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/nvrmndmnm/godiamond/internal/diamond"
-	"github.com/nvrmndmnm/godiamond/internal/facets"
 	"github.com/spf13/pflag"
 )
-
 
 func printDeployUsage() {
 	var usage = `
@@ -66,11 +59,6 @@ func (box *DiamondBox) deployExecutor(s string) {
 	s = strings.TrimSpace(s)
 	args := strings.Split(s, " ")
 
-	var tx *types.Transaction
-	var err error
-	var deploymentData DeploymentData
-	contractsMap := make(map[common.Address]string, 0)
-
 	switch args[0] {
 	case "diamond":
 		fmt.Println("diamond")
@@ -87,91 +75,50 @@ func (box *DiamondBox) deployExecutor(s string) {
 			return
 		}
 
-		metadataFile, err := os.ReadFile(metadataFilePath)
-		if err != nil {
-			fmt.Printf("Error: Failed to read metadata file: %v\n", err)
-			return
-		}
-
-		var contractMetadata ContractMetadata
-		err = json.Unmarshal(metadataFile, &contractMetadata)
-		if err != nil {
-			fmt.Printf("Error: Failed to unmarshal metadata file: %v\n", err)
-			return
-		}
-
 		// TODO: Add contract ABI and pack constructor args
-		// contractABI := contractMetadata.ABI
-		// if err != nil {
-		// 	fmt.Printf("Error: Failed to parse contract metadata: %v\n", err)
-		// 	return
-		// }
-		deploymentData, err := box.deployContract(&contractMetadata)
+		deploymentData, err := box.deployContract(metadataFilePath)
 		if err != nil {
 			fmt.Println("Error deploying the contract:", err)
+			return
 		}
 
 		writeDeploymentDataToFile(deploymentData)
 
 	case "init":
-		box.diamondCutFacet, tx, _, err = facets.DeployDiamondCutFacet(box.auth, box.client)
+		//TODO: Add more flexible way of bulk deployments
+		diamondCutFacetMetadataFilePath := box.config.Contracts.DiamondCutFacet.MetadataFilePath
+		diamondMetadataFilePath := box.config.Contracts.Diamond.MetadataFilePath
+		diamondInitMetadataFilePath := box.config.Contracts.DiamondInit.MetadataFilePath
+		loupeFacetMetadataFilePath := box.config.Contracts.DiamondLoupeFacet.MetadataFilePath
+
+		deploymentData, err := box.deployContract(diamondCutFacetMetadataFilePath)
 		if err != nil {
-			fmt.Println("Error: deploy diamond cut facet")
+			fmt.Println("Error deploying the contract:", err)
 			return
 		}
-
-		contractsMap[box.diamondCutFacet] = "DiamondCutFacet"
-		log.Printf("DiamondCutFacet address: %s\ntx: %s",
-			box.diamondCutFacet.Hex(), tx.Hash().Hex())
+		writeDeploymentDataToFile(deploymentData)
 
 		owner := box.config.Accounts["anvil"].Address
-		box.diamond, tx, _, err = diamond.DeployDiamond(box.auth, box.client, owner, box.diamondCutFacet)
+		deploymentData, err = box.deployContract(diamondMetadataFilePath, owner, deploymentData.Address)
 		if err != nil {
-			fmt.Println("Error: deploy diamond")
+			fmt.Println("Error deploying the contract:", err)
 			return
 		}
+		writeDeploymentDataToFile(deploymentData)
 
-		contractsMap[box.diamond] = "Diamond"
-		log.Printf("Diamond address: %s\ntx: %s",
-			box.diamond.Hex(), tx.Hash().Hex())
-
-		box.diamondInit, tx, _, err = facets.DeployDiamondInit(box.auth, box.client)
+		deploymentData, err = box.deployContract(diamondInitMetadataFilePath)
 		if err != nil {
-			fmt.Println("Error: deploy diamond init")
+			fmt.Println("Error deploying the contract:", err)
 			return
 		}
+		writeDeploymentDataToFile(deploymentData)
 
-		contractsMap[box.diamondInit] = "DiamondInit"
-		log.Printf("DiamondInit address: %s\ntx: %s",
-			box.diamondInit.Hex(), tx.Hash().Hex())
-
-		loupeAddress, tx, _, err := facets.DeployDiamondLoupeFacet(box.auth, box.client)
+		deploymentData, err = box.deployContract(loupeFacetMetadataFilePath)
 		if err != nil {
-			fmt.Println("Error: deploy diamond loupe facet")
+			fmt.Println("Error deploying the contract:", err)
 			return
 		}
-		box.facets = append(box.facets, loupeAddress)
-
-		contractsMap[loupeAddress] = "DiamondLoupeFacet"
-		log.Printf("DiamondLoupeFacet address: %s\ntx: %s",
-			loupeAddress.Hex(), tx.Hash().Hex())
-
-		ownershipAddress, tx, _, err := facets.DeployOwnershipFacet(box.auth, box.client)
-		if err != nil {
-			fmt.Println("Error: deploy ownership facet")
-			return
-		}
-		box.facets = append(box.facets, ownershipAddress)
-
-		contractsMap[ownershipAddress] = "OwnershipFacet"
-		log.Printf("OwnershipFacet address: %s\ntx: %s",
-			ownershipAddress.Hex(), tx.Hash().Hex())
-
-		deploymentData = DeploymentData{
-			// Contracts: contractsMap,
-		}
-
-		writeDeploymentDataToFile(&deploymentData)
+		writeDeploymentDataToFile(deploymentData)
 
 	case "help":
 		printDeployUsage()
@@ -184,4 +131,3 @@ func (box *DiamondBox) deployExecutor(s string) {
 		fmt.Printf("Unknown command: %s\n", s)
 	}
 }
-

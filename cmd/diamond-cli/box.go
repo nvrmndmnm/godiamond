@@ -15,19 +15,21 @@ type DiamondBox struct {
 	client *ethclient.Client
 	auth   *bind.TransactOpts
 
-	diamondCutFacet common.Address
-	diamond         common.Address
-	diamondInit     common.Address
-	facets          []common.Address
+	diamond           common.Address
+	diamondInit       common.Address
+	diamondCutFacet   common.Address
+	diamondLoupeFacet common.Address
+	facets            []common.Address
 }
 
 func NewDiamondBox(config Config, rpc string, chainId int64) (*DiamondBox, error) {
 	var err error
 	box := &DiamondBox{
-		config:          config,
-		diamondCutFacet: config.Contracts.DiamondCutFacet,
-		diamond:         config.Contracts.Diamond,
-		diamondInit:     config.Contracts.DiamondInit,
+		config:            config,
+		diamond:           config.Contracts.Diamond.Address,
+		diamondInit:       config.Contracts.DiamondInit.Address,
+		diamondCutFacet:   config.Contracts.DiamondCutFacet.Address,
+		diamondLoupeFacet: config.Contracts.DiamondLoupeFacet.Address,
 	}
 
 	box.client, err = ethclient.Dial(config.RPC[rpc])
