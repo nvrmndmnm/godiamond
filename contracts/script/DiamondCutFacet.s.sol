@@ -10,7 +10,8 @@ contract DeployScript is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         DiamondCutFacet dcf = new DiamondCutFacet();
-
+        console.log(address(dcf));
+        
         vm.stopBroadcast();
     }
 }
