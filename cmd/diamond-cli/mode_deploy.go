@@ -52,6 +52,15 @@ func deployCompleter(d prompt.Document) []prompt.Suggest {
 		}
 	}
 
+	if len(args) == 3 {
+		switch args[0] {
+		case "facet":
+			return []prompt.Suggest{
+				{Text: "--constructor-args=", Description: "Specify facet construcor arguments"},
+			}
+		}
+	}
+
 	return []prompt.Suggest{}
 }
 
@@ -63,11 +72,11 @@ func (box *DiamondBox) deployExecutor(s string) {
 	case "diamond":
 		fmt.Println("diamond")
 	case "facet":
-		var metadataFilePath string
-		// constructorArgs := make([]interface{}, 0)
+		var metadataFilePath, constructorArgsStr string
 
 		flags := pflag.NewFlagSet("deploy-facet", pflag.ContinueOnError)
 		flags.StringVarP(&metadataFilePath, "metadata", "", "", "Path to facet metadata file")
+		flags.StringVarP(&constructorArgsStr, "constructor-args", "", "", "Constructor arguments")
 		err := flags.Parse(args[1:])
 
 		if err != nil {
@@ -75,8 +84,14 @@ func (box *DiamondBox) deployExecutor(s string) {
 			return
 		}
 
-		// TODO: Add contract ABI and pack constructor args
-		deploymentData, err := box.deployContract(metadataFilePath)
+		argsList := strings.Split(constructorArgsStr, ",")
+
+		constructorArgs := make([]interface{}, len(argsList))
+		for i, arg := range argsList {
+			constructorArgs[i] = arg
+		}
+
+		deploymentData, err := box.deployContract(metadataFilePath, constructorArgsStr)
 		if err != nil {
 			fmt.Println("Error deploying the contract:", err)
 			return

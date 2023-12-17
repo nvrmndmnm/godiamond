@@ -33,10 +33,15 @@ func (box *DiamondBox) deployContract(metadataFilePath string, params ...any) (*
 		return nil, err
 	}
 
+	data, err := contractMetadata.ABI.Pack("", params...)
+	if err != nil {
+		panic(err)
+	}
+
 	address, tx, _, err := bind.DeployContract(box.auth,
 		contractMetadata.ABI,
 		common.FromHex(contractMetadata.Bytecode.Object),
-		box.client, params...)
+		box.client, data)
 	if err != nil {
 		fmt.Println("Error deploying contract:", err)
 		return nil, err
