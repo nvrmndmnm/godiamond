@@ -48,7 +48,17 @@ Options:
 
 **Deploy**
 ```
-TBD
+Commands:
+    diamond <owner>                        Deploy a new diamond
+    facet <metadata> <constructor-args>    Deploy a facet to use in an existing diamond
+    init                                   Deploy initial set of contracts specified by the standard 
+    help                                   Show help
+    exit                                   Exit the deploy mode
+
+Arguments:
+    --owner              string    Ethereum address of the diamond owner
+	--metadata           string    Path to contract metadata file
+	--constructor-args   string    Comma-separated list of constructor arguments
 ```
 **Cut**
 ```

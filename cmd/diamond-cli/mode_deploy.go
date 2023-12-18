@@ -12,14 +12,16 @@ import (
 func printDeployUsage() {
 	var usage = `
 Commands:
-    diamond <owner>         Deploy a new diamond
-    facet                   Deploy a facet to use in an existing diamond
-    init                    Deploy initial set of contracts specified by the standard 
-    help                    Show help
-    exit                    Exit the deploy mode
+    diamond <owner>                        Deploy a new diamond
+    facet <metadata> <constructor-args>    Deploy a facet to use in an existing diamond
+    init                                   Deploy initial set of contracts specified by the standard 
+    help                                   Show help
+    exit                                   Exit the deploy mode
 
 Arguments:
-    --owner       string    Ethereum address of the diamond owner
+    --owner              string    Ethereum address of the diamond owner
+	--metadata           string    Path to contract metadata file
+	--constructor-args   string    Comma-separated list of constructor arguments
 `
 	fmt.Print(usage)
 }
@@ -47,7 +49,7 @@ func deployCompleter(d prompt.Document) []prompt.Suggest {
 			}
 		case "facet":
 			return []prompt.Suggest{
-				{Text: "--metadata=", Description: "Path to facet metadata file"},
+				{Text: "--metadata=", Description: "Path to contract metadata file"},
 			}
 		}
 	}
@@ -56,7 +58,7 @@ func deployCompleter(d prompt.Document) []prompt.Suggest {
 		switch args[0] {
 		case "facet":
 			return []prompt.Suggest{
-				{Text: "--constructor-args=", Description: "Specify facet construcor arguments"},
+				{Text: "--constructor-args=", Description: "Specify contract construcor arguments"},
 			}
 		}
 	}
