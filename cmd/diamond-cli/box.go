@@ -19,17 +19,16 @@ type DiamondBox struct {
 	diamondInit       common.Address
 	diamondCutFacet   common.Address
 	diamondLoupeFacet common.Address
-	facets            []common.Address
 }
 
 func NewDiamondBox(config Config, rpc string, chainId int64) (*DiamondBox, error) {
 	var err error
 	box := &DiamondBox{
 		config:            config,
-		diamond:           config.Contracts.Diamond.Address,
-		diamondInit:       config.Contracts.DiamondInit.Address,
-		diamondCutFacet:   config.Contracts.DiamondCutFacet.Address,
-		diamondLoupeFacet: config.Contracts.DiamondLoupeFacet.Address,
+		diamond:           config.Contracts["diamond"].Address,
+		diamondInit:       config.Contracts["diamond_init"].Address,
+		diamondCutFacet:   config.Contracts["cut_facet"].Address,
+		diamondLoupeFacet: config.Contracts["loupe_facet"].Address,
 	}
 
 	box.client, err = ethclient.Dial(config.RPC[rpc])

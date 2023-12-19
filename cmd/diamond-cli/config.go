@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -13,12 +15,7 @@ type EOA struct {
 type Config struct {
 	Accounts  map[string]EOA    `koanf:"eoa"`
 	RPC       map[string]string `koanf:"rpc"`
-	Contracts struct {
-		Diamond           ContractMetadata `koanf:"diamond"`
-		DiamondInit       ContractMetadata `koanf:"diamond_init"`
-		DiamondCutFacet   ContractMetadata `koanf:"cut_facet"`
-		DiamondLoupeFacet ContractMetadata `koanf:"loupe_facet"`
-	} `koanf:"contracts"`
+	Contracts map[string]ContractMetadata `koanf:"contracts"`
 }
 
 type ContractMetadata struct {
@@ -34,4 +31,16 @@ type ContractMetadata struct {
 			Name string `json:"name"`
 		} `json:"nodes"`
 	} `json:"ast"`
+}
+
+
+func (c *Config) validateStandardContracts() error {
+	standardContracts := []string{"diamond", "diamond_init", "cut_facet", "loupe_facet"}
+	for _, contract := range standardContracts {
+		if _, ok := c.Contracts[contract]; !ok {
+			fmt.Println(c.Contracts)
+			return fmt.Errorf("missing mandatory ERC-2535 contract: %s", contract)
+		}
+	}
+	return nil
 }

@@ -182,13 +182,13 @@ func (box *DiamondBox) loupeExecutor(s string) {
 }
 
 func getSelectorsMetadata(selectors [][4]byte) (SelectorsMetadata, error) {
-	metadata := make(SelectorsMetadata)
+	selectorsMetadata := make(SelectorsMetadata)
 	for _, selector := range selectors {
 		selectorString := hexutil.Encode(selector[:])
 		// TODO: Since there is no easy way to retrieve the function signature from the
 		// selector, a persistent metadata of every contract deployment is needed
 		functionName := "TBD"
-		metadata[selectorString] = functionName
+		selectorsMetadata[selectorString] = functionName
 	}
-	return metadata, nil
+	return selectorsMetadata, nil
 }

@@ -103,10 +103,10 @@ func (box *DiamondBox) deployExecutor(s string) {
 
 	case "init":
 		//TODO: Add more flexible way of bulk deployments
-		diamondCutFacetMetadataFilePath := box.config.Contracts.DiamondCutFacet.MetadataFilePath
-		diamondMetadataFilePath := box.config.Contracts.Diamond.MetadataFilePath
-		diamondInitMetadataFilePath := box.config.Contracts.DiamondInit.MetadataFilePath
-		loupeFacetMetadataFilePath := box.config.Contracts.DiamondLoupeFacet.MetadataFilePath
+		diamondCutFacetMetadataFilePath := box.config.Contracts["diamond"].MetadataFilePath
+		diamondMetadataFilePath := box.config.Contracts["diamond_init"].MetadataFilePath
+		diamondInitMetadataFilePath := box.config.Contracts["cut_facet"].MetadataFilePath
+		loupeFacetMetadataFilePath := box.config.Contracts["loupe_facet"].MetadataFilePath
 
 		deploymentData, err := box.deployContract(diamondCutFacetMetadataFilePath)
 		if err != nil {

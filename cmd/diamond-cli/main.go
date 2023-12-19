@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/c-bata/go-prompt"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/file"
@@ -99,22 +98,15 @@ func main() {
 		sugar.Fatalf("Error: failed to load config: %v", err)
 	}
 
-	diamondCutFacet := k.String("contracts.cut_facet")
-	if len(diamondCutFacet) == 0 {
-		k.Set("contracts.cut_facet", common.Address{})
-	}
-	diamond := k.String("contracts.diamond")
-	if len(diamond) == 0 {
-		k.Set("contracts.diamond", common.Address{})
-	}
-	diamondInit := k.String("contracts.diamond_init")
-	if len(diamondInit) == 0 {
-		k.Set("contracts.diamond_init", common.Address{})
-	}
-
 	var config Config
+
 	if err := k.Unmarshal("", &config); err != nil {
 		sugar.Fatalf("Error: failed to unmarshal config: %v", err)
+	}
+
+	err = config.validateStandardContracts()
+	if err != nil {
+		sugar.Fatalf("Error: failed to validate config: %v", err)
 	}
 
 	if len(os.Args) < 2 {
