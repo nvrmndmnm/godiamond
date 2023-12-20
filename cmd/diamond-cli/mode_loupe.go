@@ -69,7 +69,7 @@ func (box *DiamondBox) loupeExecutor(s string) {
 	s = strings.TrimSpace(s)
 	args := strings.Split(s, " ")
 
-	loupe, err := facets.NewDiamondLoupeFacet(box.diamond, box.client)
+	loupe, err := facets.NewDiamondLoupeFacet(box.config.Contracts["diamond"].Address, box.client)
 	if err != nil {
 		fmt.Println(err)
 	}

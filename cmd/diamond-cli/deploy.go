@@ -18,32 +18,14 @@ type DeploymentData struct {
 	TxHash    string         `json:"tx"`
 }
 
-func (box *DiamondBox) deployContract(metadataFilePath string, params ...any) (*DeploymentData, error) {
-	var contractMetadata ContractMetadata
-
-	metadataFile, err := os.ReadFile(metadataFilePath)
-	if err != nil {
-		fmt.Printf("Error: Failed to read metadata file: %v\n", err)
-		return nil, err
-	}
-
-	err = json.Unmarshal(metadataFile, &contractMetadata)
-	if err != nil {
-		fmt.Printf("Error: Failed to unmarshal metadata file: %v\n", err)
-		return nil, err
-	}
-
-	data, err := contractMetadata.ABI.Pack("", params...)
-	if err != nil {
-		panic(err)
-	}
+func (box *DiamondBox) deployContract(contractIdentifier string, params ...any) (*DeploymentData, error) {
+	contractMetadata := box.contracts[contractIdentifier]
 
 	address, tx, _, err := bind.DeployContract(box.auth,
 		contractMetadata.ABI,
 		common.FromHex(contractMetadata.Bytecode.Object),
-		box.client, data)
+		box.client, params...)
 	if err != nil {
-		fmt.Println("Error deploying contract:", err)
 		return nil, err
 	}
 

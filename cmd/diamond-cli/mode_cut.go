@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/c-bata/go-prompt"
-	"github.com/ethereum/go-ethereum/accounts/abi"
+	// "github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/nvrmndmnm/godiamond/internal/facets"
 	"github.com/spf13/pflag"
@@ -81,17 +81,12 @@ func (box *DiamondBox) cutExecutor(s string) {
 	s = strings.TrimSpace(s)
 	args := strings.Split(s, " ")
 
-	diamondCut, err := facets.NewDiamondCutFacet(box.diamond, box.client)
+	diamondCut, err := facets.NewDiamondCutFacet(box.config.Contracts["diamond"].Address, box.client)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	abiInstance, err := abi.JSON(strings.NewReader(facets.DiamondInitABI))
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	calldata, err := abiInstance.Pack("init")
+	calldata, err := box.contracts["diamond_init"].ABI.Pack("init")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -144,7 +139,8 @@ func (box *DiamondBox) cutExecutor(s string) {
 			FunctionSelectors: functionSelectors,
 		})
 
-		tx, err := diamondCut.DiamondCut(box.auth, cut, box.diamondInit, calldata)
+		tx, err := diamondCut.DiamondCut(box.auth, cut,
+			box.config.Contracts["diamond_init"].Address, calldata)
 		if err != nil {
 			fmt.Println(err)
 			return

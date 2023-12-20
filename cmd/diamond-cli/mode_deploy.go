@@ -103,34 +103,29 @@ func (box *DiamondBox) deployExecutor(s string) {
 
 	case "init":
 		//TODO: Add more flexible way of bulk deployments
-		diamondCutFacetMetadataFilePath := box.config.Contracts["diamond"].MetadataFilePath
-		diamondMetadataFilePath := box.config.Contracts["diamond_init"].MetadataFilePath
-		diamondInitMetadataFilePath := box.config.Contracts["cut_facet"].MetadataFilePath
-		loupeFacetMetadataFilePath := box.config.Contracts["loupe_facet"].MetadataFilePath
-
-		deploymentData, err := box.deployContract(diamondCutFacetMetadataFilePath)
+		deploymentData, err := box.deployContract("cut_facet")
 		if err != nil {
-			fmt.Println("Error deploying the contract:", err)
+			fmt.Println("Error deploying the cut_facet contract:", err)
 			return
 		}
 		writeDeploymentDataToFile(deploymentData)
 
 		owner := box.config.Accounts["anvil"].Address
-		deploymentData, err = box.deployContract(diamondMetadataFilePath, owner, deploymentData.Address)
+		deploymentData, err = box.deployContract("diamond", owner, deploymentData.Address)
 		if err != nil {
 			fmt.Println("Error deploying the contract:", err)
 			return
 		}
 		writeDeploymentDataToFile(deploymentData)
 
-		deploymentData, err = box.deployContract(diamondInitMetadataFilePath)
+		deploymentData, err = box.deployContract("diamond_init")
 		if err != nil {
 			fmt.Println("Error deploying the contract:", err)
 			return
 		}
 		writeDeploymentDataToFile(deploymentData)
 
-		deploymentData, err = box.deployContract(loupeFacetMetadataFilePath)
+		deploymentData, err = box.deployContract("loupe_facet")
 		if err != nil {
 			fmt.Println("Error deploying the contract:", err)
 			return
