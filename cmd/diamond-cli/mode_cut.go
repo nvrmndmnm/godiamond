@@ -6,18 +6,21 @@ import (
 	"strings"
 
 	"github.com/c-bata/go-prompt"
-	// "github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/nvrmndmnm/godiamond/internal/facets"
 	"github.com/spf13/pflag"
 )
 
-type Action uint8
+type FacetCut struct {
+	FacetAddress      common.Address
+	Action            uint8
+	FunctionSelectors [][4]byte
+}
 
 const (
-	Add     Action = 0
-	Replace Action = 1
-	Remove  Action = 2
+	Add     uint8 = 0
+	Replace uint8 = 1
+	Remove  uint8 = 2
 )
 
 func printCutUsage() {
@@ -81,21 +84,19 @@ func (box *DiamondBox) cutExecutor(s string) {
 	s = strings.TrimSpace(s)
 	args := strings.Split(s, " ")
 
-	diamondCut, err := facets.NewDiamondCutFacet(box.config.Contracts["diamond"].Address, box.client)
-	if err != nil {
-		fmt.Println(err)
-	}
+	diamondCut := bind.NewBoundContract(box.config.Contracts["diamond"].Address,
+		box.contracts["cut_facet"].ABI, box.client, box.client, box.client)
 
 	calldata, err := box.contracts["diamond_init"].ABI.Pack("init")
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	var cut []facets.IDiamondCutFacetCut
+	var cut []FacetCut
 
 	switch args[0] {
 	case "add", "replace", "remove":
-		var action Action
+		var action uint8
 		var facetAddress AddressFlag
 		var functionSelectors SelectorFlag
 		var addressString, selectorString string
@@ -133,13 +134,13 @@ func (box *DiamondBox) cutExecutor(s string) {
 			action = Remove
 		}
 
-		cut = append(cut, facets.IDiamondCutFacetCut{
+		cut = append(cut, FacetCut{
 			FacetAddress:      common.Address(facetAddress),
-			Action:            uint8(action),
+			Action:            action,
 			FunctionSelectors: functionSelectors,
 		})
 
-		tx, err := diamondCut.DiamondCut(box.auth, cut,
+		tx, err := diamondCut.Transact(box.auth, "diamondCut", cut,
 			box.config.Contracts["diamond_init"].Address, calldata)
 		if err != nil {
 			fmt.Println(err)
