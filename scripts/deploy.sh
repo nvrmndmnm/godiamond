@@ -1,9 +1,15 @@
 #!/bin/bash
 
+# Use this script for development purposes to quickly deploy Diamond smart contracts.
+# It extracts necessary parameters from a config file. After deploying the contracts,
+# it prints their addresses to the console, allowing you to interact with them immediately.
+#
+# Ensure that Foundry and yq are installed on your system.
 rpc_url=$(yq -r .rpc.local <config.yaml)
 private_key=$(yq -r .eoa.anvil.private_key <config.yaml)
 contract_owner=$(yq -r .eoa.anvil.address <config.yaml)
 
+# Customize an array of facet names that you want to deploy.
 facets=('DiamondLoupeFacet' 'OwnershipFacet')
 
 diamond_cut_facet=$(forge create --rpc-url $rpc_url \

@@ -1,7 +1,10 @@
 #!/bin/bash
 
-forge build --extra-output-files abi metadata --skip script --force
-
+# This script might be useful for further growing and upgrading your Diamond contracts.
+# It generates Go bindings for all Solidity contracts in the source directory.
+#
+# Ensure that your contracts are properly built (refer to scripts/build.sh)
+# and abigen from go-ethereum is installed on your system.
 src=contracts/src
 out=contracts/out
 
@@ -21,6 +24,7 @@ find $src -type f -name "*.sol" \
     n=$name
     declare -l n
 
+    # The Diamond bindings are placed to its own package to avoid type clashes.
     if [ "$name" != "Diamond" ]; then \
         abigen --abi $out/$name.sol/$name.abi.json \
             --bin $out/$name.sol/$name.bin \
@@ -32,7 +36,6 @@ find $src -type f -name "*.sol" \
                 --bin $out/$name.sol/$name.bin \
                 --pkg diamond \
                 --type $name \
-                --exc IDiamondCut \
                 --out internal/diamond/$n.go;
     fi
 done
