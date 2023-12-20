@@ -67,6 +67,11 @@ func loupeCompleter(d prompt.Document) []prompt.Suggest {
 			return []prompt.Suggest{
 				{Text: "--selector=", Description: "Specify the function selector"},
 			}
+
+		case "supports-interface":
+			return []prompt.Suggest{
+				{Text: "--id=", Description: "Specify the interface identifier"},
+			}
 		}
 	}
 
@@ -189,6 +194,41 @@ func (box *DiamondBox) loupeExecutor(s string) {
 		facetAddress := *abi.ConvertType(callResult[0], new(common.Address)).(*common.Address)
 
 		fmt.Println("facet address: ", facetAddress.String())
+
+	case "supports-interface":
+		var interfaceId SelectorFlag
+		var interfaceIdString string
+		var callResult []any
+
+		flags := pflag.NewFlagSet("supports-interface", pflag.ContinueOnError)
+		flags.StringVarP(&interfaceIdString, "id", "", "", "Interface identifier")
+		err := flags.Parse(args[1:])
+
+		if err != nil {
+			fmt.Println("Error: invalid arguments for supports-interface command")
+			return
+		}
+
+		if err := interfaceId.Set(interfaceIdString); err != nil {
+			fmt.Printf("Error: invalid id format: %v\n", err)
+			return
+		}
+
+		if len(interfaceId) > 1 {
+			fmt.Println("Error: provide a single identifier")
+			return
+		}
+
+		id := [4]byte(interfaceId[0])
+
+		err = loupe.Call(&bind.CallOpts{}, &callResult, "supportsInterface", id)
+		if err != nil {
+			fmt.Println("Error: checking interface support", err)
+		}
+
+		status := *abi.ConvertType(callResult[0], new(bool)).(*bool)
+
+		fmt.Println("ERC-165 status:", status)
 
 	case "help":
 		printLoupeUsage()
