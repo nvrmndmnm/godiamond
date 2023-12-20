@@ -6,14 +6,19 @@ import (
 	"strings"
 
 	"github.com/c-bata/go-prompt"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/nvrmndmnm/godiamond/internal/facets"
 	"github.com/spf13/pflag"
 )
 
 type SelectorsMetadata map[string]string
+
+type LoupeFacet struct {
+	FacetAddress      common.Address
+	FunctionSelectors [][4]byte
+}
 
 func printLoupeUsage() {
 	var usage = `
@@ -22,12 +27,14 @@ Commands:
     addresses                     Show all facet addresses used by a diamond
     facet-selectors <address>     Show all function selectors provided by a facet
     facet-address <selector>      Show the facet that supports the given selector
+	supports-interface <id>       Show if the contract implements an interface
     help                          Show help
     exit                          Exit the loupe mode
 
 Arguments:
     --address           string    Ethereum address of the facet
     --selector          string    4-byte function selector representation 
+	--id                string    4-byte interface identifier
 `
 	fmt.Print(usage)
 }
@@ -38,6 +45,7 @@ func loupeCompleter(d prompt.Document) []prompt.Suggest {
 		{Text: "addresses", Description: "Show all facet addresses used by a diamond"},
 		{Text: "facet-selectors", Description: "Show all function selectors provided by a facet"},
 		{Text: "facet-address", Description: "Show the facet that supports the given selector"},
+		{Text: "supports-interface", Description: "Show if the contract implements an interface"},
 		{Text: "help", Description: "Show help message"},
 		{Text: "exit", Description: "Exit the loupe interactive mode"},
 	}
@@ -69,19 +77,21 @@ func (box *DiamondBox) loupeExecutor(s string) {
 	s = strings.TrimSpace(s)
 	args := strings.Split(s, " ")
 
-	loupe, err := facets.NewDiamondLoupeFacet(box.config.Contracts["diamond"].Address, box.client)
-	if err != nil {
-		fmt.Println(err)
-	}
+	loupe := bind.NewBoundContract(box.config.Contracts["diamond"].Address,
+		box.contracts["loupe_facet"].ABI, box.client, box.client, box.client)
 
 	switch args[0] {
 	case "facets":
-		facets, err := loupe.Facets(&bind.CallOpts{})
+		var callResult []any
+		err := loupe.Call(&bind.CallOpts{}, &callResult, "facets")
 		if err != nil {
 			fmt.Println("Error: getting facets of a diamond", err)
 		}
 
+		facets := *abi.ConvertType(callResult[0], new([]LoupeFacet)).(*[]LoupeFacet)
+
 		for _, facet := range facets {
+
 			fmt.Printf("facet address: %v\n", facet.FacetAddress)
 
 			selectorsMetadata, err := getSelectorsMetadata(facet.FunctionSelectors)
@@ -97,10 +107,13 @@ func (box *DiamondBox) loupeExecutor(s string) {
 		}
 
 	case "addresses":
-		facetAddreses, err := loupe.FacetAddresses(&bind.CallOpts{})
+		var callResult []any
+		err := loupe.Call(&bind.CallOpts{}, &callResult, "facetAddresses")
 		if err != nil {
 			fmt.Println("Error: getting addresses of the facets", err)
 		}
+
+		facetAddreses := *abi.ConvertType(callResult[0], new([]common.Address)).(*[]common.Address)
 
 		for _, address := range facetAddreses {
 			fmt.Println(address.String())
@@ -109,6 +122,7 @@ func (box *DiamondBox) loupeExecutor(s string) {
 	case "facet-selectors":
 		var facetAddress AddressFlag
 		var addressString string
+		var callResult []any
 
 		flags := pflag.NewFlagSet("facet-selectors", pflag.ContinueOnError)
 		flags.StringVarP(&addressString, "address", "", "", "Facet address")
@@ -124,17 +138,19 @@ func (box *DiamondBox) loupeExecutor(s string) {
 			return
 		}
 
-		facetSelectors, err := loupe.FacetFunctionSelectors(&bind.CallOpts{},
-			common.Address(facetAddress))
+		err = loupe.Call(&bind.CallOpts{}, &callResult, "facetFunctionSelectors", common.Address(facetAddress))
 		if err != nil {
 			fmt.Println("Error: getting facet selectors", err)
 		}
+
+		facetSelectors := *abi.ConvertType(callResult[0], new([][4]byte)).(*[][4]byte)
 
 		selectorsMetadata, err := getSelectorsMetadata(facetSelectors)
 		if err != nil {
 			fmt.Println("Error: could not retrieve selector metadata", err)
 			return
 		}
+
 		for selector, functionName := range selectorsMetadata {
 			fmt.Printf("\t%s: %s \n", selector, functionName)
 		}
@@ -142,6 +158,7 @@ func (box *DiamondBox) loupeExecutor(s string) {
 	case "facet-address":
 		var functionSelector SelectorFlag
 		var selectorString string
+		var callResult []any
 
 		flags := pflag.NewFlagSet("facet-address", pflag.ContinueOnError)
 		flags.StringVarP(&selectorString, "selector", "", "", "Function selector")
@@ -163,10 +180,14 @@ func (box *DiamondBox) loupeExecutor(s string) {
 		}
 
 		selector := [4]byte(functionSelector[0])
-		facetAddress, err := loupe.FacetAddress(&bind.CallOpts{}, selector)
+
+		err = loupe.Call(&bind.CallOpts{}, &callResult, "facetAddress", selector)
 		if err != nil {
 			fmt.Println("Error: getting facet address", err)
 		}
+
+		facetAddress := *abi.ConvertType(callResult[0], new(common.Address)).(*common.Address)
+
 		fmt.Println("facet address: ", facetAddress.String())
 
 	case "help":
