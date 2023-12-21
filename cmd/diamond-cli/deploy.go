@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"os"
 	"sort"
 	"time"
@@ -13,8 +14,11 @@ import (
 
 type DeploymentData struct {
 	Address   common.Address `json:"address"`
+	Deployer  common.Address `json:"deployer"`
 	Name      string         `json:"name"`
 	Selectors [][]string     `json:"selectors"`
+	RPC       string         `json:"rpc"`
+	ChainID   big.Int        `json:"chainId"`
 	TxHash    string         `json:"tx"`
 }
 
@@ -43,8 +47,11 @@ func (box *DiamondBox) deployContract(contractIdentifier string, params ...any) 
 
 	deploymentData := DeploymentData{
 		Address:   address,
+		Deployer:  box.auth.From,
 		Name:      contractMetadata.AST.Nodes[len(contractMetadata.AST.Nodes)-1].Name,
 		Selectors: facetSelectors,
+		RPC:       box.rpcName,
+		ChainID:   *box.chainId,
 		TxHash:    tx.Hash().Hex(),
 	}
 

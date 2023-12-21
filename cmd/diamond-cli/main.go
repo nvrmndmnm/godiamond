@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/big"
 	"os"
 
 	"github.com/c-bata/go-prompt"
@@ -18,7 +19,6 @@ type Arguments struct {
 	ValueConfig  string
 	ValueChainID int64
 	FlagDebug    bool
-	FlagHelp     bool
 }
 
 func printUsage() {
@@ -31,7 +31,7 @@ Usage:
 
 Options:
     --rpc <name>          string    RPC identifier
-    --chain-id <id>       int       Chain ID (default: 0)
+    --chain-id <id>       int       Chain ID (default: -1, will auto-detect)
     -c --config <path>    string    Load config file (default: "config.yaml")
     -d --debug                      Enable debug mode (default: disabled)
     -h --help                       Show help
@@ -66,21 +66,15 @@ func main() {
 
 	pflag.Usage = printUsage
 	pflag.StringVarP(&args.ValueConfig, "config", "c", "config.yaml", "Load config file")
-	pflag.StringVarP(&args.ValueRPC, "rpc", "", "", "RPC identifier")
-	pflag.Int64Var(&args.ValueChainID, "chain-id", 0, "Chain id.")
+	pflag.StringVar(&args.ValueRPC, "rpc", "", "RPC identifier")
+	pflag.Int64Var(&args.ValueChainID, "chain-id", -1, "Chain id.")
 	pflag.BoolVarP(&args.FlagDebug, "debug", "d", false, "Enable debug mode")
-	pflag.BoolVarP(&args.FlagHelp, "help", "h", false, "Show help")
 
 	pflag.Parse()
 
 	logger, err := zap.NewProduction()
 	if err != nil {
 		log.Fatalf("Error: failed to initialize logger: %v", err)
-	}
-
-	if args.FlagHelp {
-		pflag.Usage()
-		return
 	}
 
 	if args.FlagDebug {
@@ -120,7 +114,10 @@ func main() {
 	// 	pflag.Usage()
 	// }
 
-	box, err := NewDiamondBox(config, "local", 0)
+	chainId := new(big.Int)
+	chainId.SetInt64(args.ValueChainID)
+
+	box, err := NewDiamondBox(config, "local", chainId)
 	if err != nil {
 		sugar.Error("Error: couldn't fill the box with treasures")
 	}
@@ -136,6 +133,9 @@ func main() {
 
 	case "loupe":
 		runMode("loupe", box.loupeExecutor, loupeCompleter)
+
+	case "help":
+		pflag.Usage()
 
 	default:
 		sugar.Error("Error: no command specified")

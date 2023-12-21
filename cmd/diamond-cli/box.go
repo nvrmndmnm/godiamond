@@ -27,24 +27,27 @@ type ContractMetadata struct {
 }
 
 type DiamondBox struct {
-	config Config
-	client *ethclient.Client
-	auth   *bind.TransactOpts
-
+	config    Config
+	client    *ethclient.Client
+	auth      *bind.TransactOpts
+	rpcName   string
+	chainId   *big.Int
 	contracts map[string]ContractMetadata
 }
 
-func NewDiamondBox(config Config, rpc string, chainId int64) (*DiamondBox, error) {
+func NewDiamondBox(config Config, rpc string, chainId *big.Int) (*DiamondBox, error) {
 	var err error
 
 	box := &DiamondBox{
 		config:    config,
+		rpcName:   rpc,
+		chainId:   chainId,
 		contracts: make(map[string]ContractMetadata),
 	}
 
 	for contractIdentifier, contractMeta := range config.Contracts {
 		var contractMetadata ContractMetadata
-		
+
 		metadataFile, err := os.ReadFile(contractMeta.MetadataFilePath)
 		if err != nil {
 			fmt.Printf("Error: Failed to read metadata file: %v\n", err)
@@ -60,18 +63,16 @@ func NewDiamondBox(config Config, rpc string, chainId int64) (*DiamondBox, error
 		box.contracts[contractIdentifier] = contractMetadata
 	}
 
-	box.client, err = ethclient.Dial(config.RPC[rpc])
+	box.client, err = ethclient.Dial(config.RPC[box.rpcName])
 	if err != nil {
 		return nil, err
 	}
 
-	if chainId == 0 {
-		networkId, err := box.client.NetworkID(context.Background())
+	if chainId.Cmp(big.NewInt(-1)) == 0 {
+		box.chainId, err = box.client.NetworkID(context.Background())
 		if err != nil {
 			return nil, err
 		}
-
-		chainId = networkId.Int64()
 	}
 
 	privateKey, err := crypto.HexToECDSA(config.Accounts["anvil"].PrivateKey[2:])
@@ -79,7 +80,7 @@ func NewDiamondBox(config Config, rpc string, chainId int64) (*DiamondBox, error
 		return nil, err
 	}
 
-	box.auth, err = bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(chainId))
+	box.auth, err = bind.NewKeyedTransactorWithChainID(privateKey, box.chainId)
 	if err != nil {
 		return nil, err
 	}
