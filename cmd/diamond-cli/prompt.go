@@ -32,49 +32,40 @@ var mode = &Command{
 	},
 }
 
-func completer(d prompt.Document) []prompt.Suggest {
-	commands := make([]prompt.Suggest, len(mode.SubCommands))
+func createSuggestions(commands map[string]*Command, args []string) []prompt.Suggest {
+	suggestions := make([]prompt.Suggest, 0, len(commands))
 
-	for commandName, command := range mode.SubCommands {
-		commands = append(commands, prompt.Suggest{
-			Text:        commandName,
-			Description: command.Description,
-		})
-	}
-	sort.Slice(commands, func(i, j int) bool {
-		return commands[i].Text < commands[j].Text
-	})
-
-	args := strings.Split(d.Text, " ")
-
-	if len(args) <= 1 {
-		return prompt.FilterHasPrefix(commands, d.TextBeforeCursor(), true)
-	}
-
-	cmd := mode.SubCommands[args[0]]
-	s := make([]prompt.Suggest, 0)
-
-	for text, subcmd := range cmd.SubCommands {
-		selected := false
-
+outer:
+	for text, cmd := range commands {
 		for _, arg := range args {
 			if strings.Contains(arg, text) {
-				selected = true
+				continue outer
 			}
 		}
 
-		if !selected {
-			s = append(s, prompt.Suggest{Text: text, Description: subcmd.Description})
-		}
+		suggestions = append(suggestions, prompt.Suggest{
+			Text:        text,
+			Description: cmd.Description,
+		})
 	}
 
-	sort.Slice(s, func(i, j int) bool {
-		return s[i].Text < s[j].Text
+	sort.Slice(suggestions, func(i, j int) bool {
+		return suggestions[i].Text < suggestions[j].Text
 	})
 
-	return s
+	return suggestions
+}
+
+func completer(d prompt.Document) []prompt.Suggest {
+	args := strings.Split(d.Text, " ")
+	
+	if cmd, ok := mode.SubCommands[args[0]]; ok {
+		return createSuggestions(cmd.SubCommands, args[1:])
+	}
+
+	return createSuggestions(mode.SubCommands, args)
 }
 
 func executor(s string) {
-	fmt.Print(s)
+	fmt.Println(s)
 }
