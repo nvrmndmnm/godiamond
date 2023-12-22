@@ -28,13 +28,13 @@ Usage:
     diamond-cli deploy [options]
     diamond-cli cut [options]
     diamond-cli loupe [options]
+	diamond-cli help
 
 Options:
     --rpc <name>          string    RPC identifier
     --chain-id <id>       int       Chain ID (default: -1, will auto-detect)
     -c --config <path>    string    Load config file (default: "config.yaml")
     -d --debug                      Enable debug mode (default: disabled)
-    -h --help                       Show help
 
 `
 	fmt.Print(usage)
@@ -133,6 +133,9 @@ func main() {
 
 	case "loupe":
 		runMode("loupe", box.loupeExecutor, loupeCompleter)
+
+	case "test":
+		runMode("test", executor, completer)
 
 	case "help":
 		pflag.Usage()
