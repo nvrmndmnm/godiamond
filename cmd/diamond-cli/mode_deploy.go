@@ -5,7 +5,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/c-bata/go-prompt"
 	"github.com/spf13/pflag"
 )
 
@@ -24,46 +23,6 @@ Arguments:
 	--constructor-args   string    Comma-separated list of constructor arguments
 `
 	fmt.Print(usage)
-}
-
-func deployCompleter(d prompt.Document) []prompt.Suggest {
-	s := []prompt.Suggest{
-		{Text: "diamond", Description: "Deploy a new diamond"},
-		{Text: "facet", Description: "Deploy a facet to use in an existing diamond"},
-		{Text: "init", Description: "Deploy initial set of contracts specified by the standard"},
-		{Text: "help", Description: "Show help message"},
-		{Text: "exit", Description: "Exit the deploy mode"},
-	}
-
-	args := strings.Split(d.Text, " ")
-
-	if len(args) <= 1 {
-		return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
-	}
-
-	if len(args) == 2 {
-		switch args[0] {
-		case "diamond":
-			return []prompt.Suggest{
-				{Text: "--owner=", Description: "Specify the Ethereum address of the owner"},
-			}
-		case "facet":
-			return []prompt.Suggest{
-				{Text: "--metadata=", Description: "Path to contract metadata file"},
-			}
-		}
-	}
-
-	if len(args) == 3 {
-		switch args[0] {
-		case "facet":
-			return []prompt.Suggest{
-				{Text: "--constructor-args=", Description: "Specify contract construcor arguments"},
-			}
-		}
-	}
-
-	return []prompt.Suggest{}
 }
 
 func (box *DiamondBox) deployExecutor(s string) {

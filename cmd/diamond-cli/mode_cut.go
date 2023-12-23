@@ -5,7 +5,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/c-bata/go-prompt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/pflag"
@@ -37,47 +36,6 @@ Arguments:
     --selectors   string    Comma-separated list of 4-byte function selectors
 `
 	fmt.Print(usage)
-}
-
-func cutCompleter(d prompt.Document) []prompt.Suggest {
-	s := []prompt.Suggest{
-		{Text: "add", Description: "Add a new facet with specified function selectors"},
-		{Text: "replace", Description: "Replace selectors of an existing facet"},
-		{Text: "remove", Description: "Remove selectors from the diamond"},
-		{Text: "help", Description: "Show help message"},
-		{Text: "exit", Description: "Exit the cut mode"},
-	}
-
-	args := strings.Split(d.Text, " ")
-
-	if len(args) <= 1 {
-		return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
-	}
-
-	if len(args) == 2 {
-		switch args[0] {
-		case "add", "replace":
-			return []prompt.Suggest{
-				{Text: "--address=", Description: "Specify the Ethereum address of a facet"},
-			}
-
-		case "remove":
-			return []prompt.Suggest{
-				{Text: "--selectors=", Description: "Specify the function selectors"},
-			}
-		}
-	}
-
-	if len(args) == 3 {
-		switch args[0] {
-		case "add", "replace":
-			return []prompt.Suggest{
-				{Text: "--selectors=", Description: "Specify the function selectors"},
-			}
-		}
-	}
-
-	return []prompt.Suggest{}
 }
 
 func (box *DiamondBox) cutExecutor(s string) {

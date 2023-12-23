@@ -5,7 +5,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/c-bata/go-prompt"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -37,45 +36,6 @@ Arguments:
 	--id                string    4-byte interface identifier
 `
 	fmt.Print(usage)
-}
-
-func loupeCompleter(d prompt.Document) []prompt.Suggest {
-	s := []prompt.Suggest{
-		{Text: "facets", Description: "Show all facets and their selectors"},
-		{Text: "addresses", Description: "Show all facet addresses used by a diamond"},
-		{Text: "facet-selectors", Description: "Show all function selectors provided by a facet"},
-		{Text: "facet-address", Description: "Show the facet that supports the given selector"},
-		{Text: "supports-interface", Description: "Show if the contract implements an interface"},
-		{Text: "help", Description: "Show help message"},
-		{Text: "exit", Description: "Exit the loupe interactive mode"},
-	}
-
-	args := strings.Split(d.Text, " ")
-
-	if len(args) <= 1 {
-		return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
-	}
-
-	if len(args) == 2 {
-		switch args[0] {
-		case "facet-selectors":
-			return []prompt.Suggest{
-				{Text: "--address=", Description: "Specify the Ethereum address of a facet"},
-			}
-
-		case "facet-address":
-			return []prompt.Suggest{
-				{Text: "--selector=", Description: "Specify the function selector"},
-			}
-
-		case "supports-interface":
-			return []prompt.Suggest{
-				{Text: "--id=", Description: "Specify the interface identifier"},
-			}
-		}
-	}
-
-	return []prompt.Suggest{}
 }
 
 func (box *DiamondBox) loupeExecutor(s string) {
