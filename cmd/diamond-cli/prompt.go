@@ -32,7 +32,14 @@ var mode = &Command{
 	},
 }
 
-func createSuggestions(commands map[string]*Command, args []string) []prompt.Suggest {
+func completer(d prompt.Document) []prompt.Suggest {
+	args := strings.Split(d.Text, " ")
+
+	commands := mode.SubCommands
+	if cmd, ok := commands[args[0]]; ok {
+		commands = cmd.SubCommands
+	}
+
 	suggestions := make([]prompt.Suggest, 0, len(commands))
 
 outer:
@@ -54,16 +61,6 @@ outer:
 	})
 
 	return suggestions
-}
-
-func completer(d prompt.Document) []prompt.Suggest {
-	args := strings.Split(d.Text, " ")
-	
-	if cmd, ok := mode.SubCommands[args[0]]; ok {
-		return createSuggestions(cmd.SubCommands, args[1:])
-	}
-
-	return createSuggestions(mode.SubCommands, args)
 }
 
 func executor(s string) {
