@@ -19,25 +19,6 @@ type LoupeFacet struct {
 	FunctionSelectors [][4]byte
 }
 
-func printLoupeUsage() {
-	var usage = `
-Commands:
-    facets                        Show all facets and their selectors
-    addresses                     Show all facet addresses used by a diamond
-    facet-selectors <address>     Show all function selectors provided by a facet
-    facet-address <selector>      Show the facet that supports the given selector
-	supports-interface <id>       Show if the contract implements an interface
-    help                          Show help
-    exit                          Exit the loupe mode
-
-Arguments:
-    --address           string    Ethereum address of the facet
-    --selector          string    4-byte function selector representation 
-	--id                string    4-byte interface identifier
-`
-	fmt.Print(usage)
-}
-
 func (box *DiamondBox) loupeExecutor(s string) {
 	s = strings.TrimSpace(s)
 	args := strings.Split(s, " ")
@@ -191,7 +172,7 @@ func (box *DiamondBox) loupeExecutor(s string) {
 		fmt.Println("ERC-165 status:", status)
 
 	case "help":
-		printLoupeUsage()
+		box.mode.printUsage()
 
 	case "exit":
 		fmt.Println("Exiting...")

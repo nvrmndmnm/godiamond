@@ -22,22 +22,6 @@ const (
 	Remove  uint8 = 2
 )
 
-func printCutUsage() {
-	var usage = `
-Commands:
-    add <address> <selectors>      Add a new facet with specified function selectors
-    replace <address> <selectors>  Replace selectors of an existing facet
-    remove <selectors>             Remove selectors from the diamond
-    help                           Show help
-    exit                           Exit the cut mode
-
-Arguments:
-    --address     string    Ethereum address of the facet
-    --selectors   string    Comma-separated list of 4-byte function selectors
-`
-	fmt.Print(usage)
-}
-
 func (box *DiamondBox) cutExecutor(s string) {
 	s = strings.TrimSpace(s)
 	args := strings.Split(s, " ")
@@ -108,7 +92,7 @@ func (box *DiamondBox) cutExecutor(s string) {
 		fmt.Println(tx.Hash())
 
 	case "help":
-		printCutUsage()
+		box.mode.printUsage()
 
 	case "exit":
 		fmt.Println("Exiting...")

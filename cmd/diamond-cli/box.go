@@ -28,6 +28,7 @@ type ContractMetadata struct {
 
 type DiamondBox struct {
 	config    Config
+	mode      *Command
 	client    *ethclient.Client
 	auth      *bind.TransactOpts
 	rpcName   string
@@ -35,11 +36,12 @@ type DiamondBox struct {
 	contracts map[string]ContractMetadata
 }
 
-func NewDiamondBox(config Config, rpc string, chainId *big.Int) (*DiamondBox, error) {
+func NewDiamondBox(config Config, mode *Command, rpc string, chainId *big.Int) (*DiamondBox, error) {
 	var err error
 
 	box := &DiamondBox{
 		config:    config,
+		mode:      mode,
 		rpcName:   rpc,
 		chainId:   chainId,
 		contracts: make(map[string]ContractMetadata),
