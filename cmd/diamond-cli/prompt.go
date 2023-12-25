@@ -11,6 +11,7 @@ type Command struct {
 	Name        string
 	Description string
 	SubCommands []*Command
+	executor    prompt.Executor
 }
 
 func (c *Command) completer(d prompt.Document) []prompt.Suggest {
@@ -65,14 +66,14 @@ func (c *Command) printUsage() {
 	}
 }
 
-func runCommand(mode string, exectutor prompt.Executor, completer prompt.Completer) {
+func (box *DiamondBox) run() {
 	fmt.Println("Please enter a command. Type 'exit' to quit.")
 	p := prompt.New(
-		exectutor,
-		completer,
+		box.mode.executor,
+		box.mode.completer,
 		prompt.OptionPrefix("> "),
-		prompt.OptionTitle(mode),
-		prompt.OptionMaxSuggestion(4),
+		prompt.OptionTitle(box.mode.Name),
+		prompt.OptionMaxSuggestion(uint16(len(box.mode.SubCommands))),
 		prompt.OptionSuggestionBGColor(prompt.Black),
 		prompt.OptionSuggestionTextColor(prompt.LightGray),
 		prompt.OptionDescriptionBGColor(prompt.Black),

@@ -86,6 +86,13 @@ func main() {
 		pflag.Usage()
 	}
 
+	if os.Args[1] == "help" {
+		printUsage()
+		return
+	}
+
+	mode := os.Args[1]
+
 	//TODO: decide if rpc is needed to be an argument
 	// if args.ValueRPC == "" {
 	// 	sugar.Error("Error: the rpc flag is required")
@@ -95,41 +102,12 @@ func main() {
 	chainId := new(big.Int)
 	chainId.SetInt64(args.ValueChainID)
 
-	mode := selectMode(os.Args[1])
-
-	if mode == nil {
-		pflag.Usage()
-		sugar.Fatalf("Error: command not found")
-	}
-
 	box, err := NewDiamondBox(config, mode, "local", chainId)
 	if err != nil {
-		sugar.Error("Error: couldn't fill the box with treasures")
+		sugar.Fatalf("Error: couldn't fill the box with treasures: %v", err)
 	}
 
 	defer box.Close()
 
-	switch box.mode.Name {
-	case "deploy":
-		runCommand(box.mode.Name, box.deployExecutor, box.mode.completer)
-	
-	case "cut":
-		runCommand(box.mode.Name, box.cutExecutor, box.mode.completer)
-		
-	case "loupe":
-		runCommand(box.mode.Name, box.loupeExecutor, box.mode.completer)
-	
-	case "test":
-		runCommand(box.mode.Name, box.deployExecutor, box.mode.completer)
-
-	case "help":
-		box.mode.printUsage()
-
-	case "exit":
-		fmt.Println("Exiting...")
-		os.Exit(0)
-
-	default:
-		fmt.Printf("Unknown command: %s\n", box.mode.Name)
-	}
+	box.run()
 }

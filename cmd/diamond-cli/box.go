@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"os"
 
+	"github.com/c-bata/go-prompt"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -36,12 +37,11 @@ type DiamondBox struct {
 	contracts map[string]ContractMetadata
 }
 
-func NewDiamondBox(config Config, mode *Command, rpc string, chainId *big.Int) (*DiamondBox, error) {
+func NewDiamondBox(config Config, modeName string, rpc string, chainId *big.Int) (*DiamondBox, error) {
 	var err error
 
 	box := &DiamondBox{
 		config:    config,
-		mode:      mode,
 		rpcName:   rpc,
 		chainId:   chainId,
 		contracts: make(map[string]ContractMetadata),
@@ -92,7 +92,24 @@ func NewDiamondBox(config Config, mode *Command, rpc string, chainId *big.Int) (
 		return nil, err
 	}
 	box.auth.GasPrice = gasPrice
+	
+	box.mode = selectMode(modeName)
+	if box.mode == nil {
+		return nil, fmt.Errorf("mode not found")
+	}
 
+	modeExecutors := map[string]prompt.Executor{
+		"deploy": box.deployExecutor,
+		"cut":    box.cutExecutor,
+		"loupe":  box.loupeExecutor,
+	}
+	
+	executor, ok := modeExecutors[modeName]
+	if !ok {
+		return nil, fmt.Errorf("mode executor not found")
+	}
+
+	box.mode.executor = executor
 	return box, nil
 }
 
