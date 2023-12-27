@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -22,10 +20,7 @@ const (
 	Remove  uint8 = 2
 )
 
-func (box *DiamondBox) cutExecutor(s string) {
-	s = strings.TrimSpace(s)
-	args := strings.Split(s, " ")
-
+func (box *DiamondBox) modeCut(cmd *Command, flags *pflag.FlagSet) {
 	diamondCut := bind.NewBoundContract(box.config.Contracts["diamond"].Address,
 		box.contracts["cut_facet"].ABI, box.client, box.client, box.client)
 
@@ -36,26 +31,25 @@ func (box *DiamondBox) cutExecutor(s string) {
 
 	var cut []FacetCut
 
-	switch args[0] {
+	switch cmd.Name {
 	case "add", "replace", "remove":
 		var action uint8
 		var facetAddress AddressFlag
 		var functionSelectors SelectorFlag
-		var addressString, selectorString string
 
-		flags := pflag.NewFlagSet("cut", pflag.ContinueOnError)
-
-		flags.StringVarP(&addressString, "address", "", "", "Facet address")
-
-		flags.StringVarP(&selectorString, "selectors", "", "", "Function selectors")
-		err := flags.Parse(args[1:])
-
+		addressString, err := flags.GetString("address")
 		if err != nil {
-			fmt.Println("invalid arguments for cut add command")
+			fmt.Println("invalid address flag")
 			return
 		}
 
-		if args[0] == "add" || args[0] == "replace" {
+		selectorString, err := flags.GetString("selectors")
+		if err != nil {
+			fmt.Println("invalid selector flag")
+			return
+		}
+
+		if cmd.Name == "add" || cmd.Name == "replace" {
 			if err := facetAddress.Set(addressString); err != nil {
 				fmt.Printf("invalid Ethereum address format: %v\n", err)
 				return
@@ -67,7 +61,7 @@ func (box *DiamondBox) cutExecutor(s string) {
 			return
 		}
 
-		switch args[0] {
+		switch cmd.Name {
 		case "add":
 			action = Add
 		case "replace":
@@ -90,15 +84,5 @@ func (box *DiamondBox) cutExecutor(s string) {
 		}
 
 		fmt.Println(tx.Hash())
-
-	case "help":
-		box.mode.printUsage()
-
-	case "exit":
-		fmt.Println("Exiting...")
-		os.Exit(0)
-
-	default:
-		fmt.Printf("unknown command: %s\n", s)
 	}
 }

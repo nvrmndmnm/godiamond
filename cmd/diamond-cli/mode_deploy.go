@@ -2,29 +2,34 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/spf13/pflag"
 )
 
-func (box *DiamondBox) deployExecutor(s string) {
-	s = strings.TrimSpace(s)
-	args := strings.Split(s, " ")
-
-	switch args[0] {
+func (box *DiamondBox) modeDeploy(cmd *Command, flags *pflag.FlagSet) {
+	fmt.Println(box.mode.SubCommands)
+	fmt.Println("---------")
+	fmt.Println(cmd)
+	switch cmd.Name {
 	case "diamond":
-		fmt.Println("diamond")
-	case "facet":
-		var metadataFilePath, constructorArgsStr string
-
-		flags := pflag.NewFlagSet("deploy-facet", pflag.ContinueOnError)
-		flags.StringVarP(&metadataFilePath, "metadata", "", "", "Path to facet metadata file")
-		flags.StringVarP(&constructorArgsStr, "constructor-args", "", "", "Constructor arguments")
-		err := flags.Parse(args[1:])
-
+		owner, err := flags.GetString("owner")
 		if err != nil {
-			fmt.Println("Invalid arguments for facet deploy command")
+			fmt.Println("invalid owner flag")
+			return
+		}
+		fmt.Println(owner)
+
+	case "facet":
+		metadataFilePath, err := flags.GetString("metadata")
+		if err != nil {
+			fmt.Println("invalid metadata flag")
+			return
+		}
+
+		constructorArgsStr, err := flags.GetString("constructor-args")
+		if err != nil {
+			fmt.Println("invalid constructor flag")
 			return
 		}
 
@@ -44,44 +49,34 @@ func (box *DiamondBox) deployExecutor(s string) {
 		writeDeploymentDataToFile(deploymentData)
 
 	case "init":
-		//TODO: Add more flexible way of bulk deployments
-		deploymentData, err := box.deployContract("cut_facet")
+		cutFacet, err := box.deployContract("cut_facet")
 		if err != nil {
 			fmt.Println("error deploying the cut_facet contract:", err)
 			return
 		}
-		writeDeploymentDataToFile(deploymentData)
+		writeDeploymentDataToFile(cutFacet)
 
 		owner := box.config.Accounts["anvil"].Address
-		deploymentData, err = box.deployContract("diamond", owner, deploymentData.Address)
+		diamond, err := box.deployContract("diamond", owner, cutFacet.Address)
 		if err != nil {
 			fmt.Println("error deploying the contract:", err)
 			return
 		}
-		writeDeploymentDataToFile(deploymentData)
+		writeDeploymentDataToFile(diamond)
 
-		deploymentData, err = box.deployContract("diamond_init")
+		diamondInit, err := box.deployContract("diamond_init")
 		if err != nil {
 			fmt.Println("error deploying the contract:", err)
 			return
 		}
-		writeDeploymentDataToFile(deploymentData)
+		writeDeploymentDataToFile(diamondInit)
 
-		deploymentData, err = box.deployContract("loupe_facet")
+		loupeFacet, err := box.deployContract("loupe_facet")
 		if err != nil {
 			fmt.Println("error deploying the contract:", err)
 			return
 		}
-		writeDeploymentDataToFile(deploymentData)
+		writeDeploymentDataToFile(loupeFacet)
 
-	case "help":
-		box.mode.printUsage()
-
-	case "exit":
-		fmt.Println("Exiting...")
-		os.Exit(0)
-
-	default:
-		fmt.Printf("Unknown command: %s\n", s)
 	}
 }

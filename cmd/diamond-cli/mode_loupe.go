@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -19,19 +17,18 @@ type LoupeFacet struct {
 	FunctionSelectors [][4]byte
 }
 
-func (box *DiamondBox) loupeExecutor(s string) {
-	s = strings.TrimSpace(s)
-	args := strings.Split(s, " ")
+func (box *DiamondBox) modeLoupe(cmd *Command, flags *pflag.FlagSet) {
 
 	loupe := bind.NewBoundContract(box.config.Contracts["diamond"].Address,
 		box.contracts["loupe_facet"].ABI, box.client, box.client, box.client)
 
-	switch args[0] {
+	switch cmd.Name {
 	case "facets":
 		var callResult []any
 		err := loupe.Call(&bind.CallOpts{}, &callResult, "facets")
 		if err != nil {
-			fmt.Println("getting facets of a diamond", err)
+			fmt.Println("error getting facets of a diamond:", err)
+			return
 		}
 
 		facets := *abi.ConvertType(callResult[0], new([]LoupeFacet)).(*[]LoupeFacet)
@@ -67,15 +64,11 @@ func (box *DiamondBox) loupeExecutor(s string) {
 
 	case "facet-selectors":
 		var facetAddress AddressFlag
-		var addressString string
 		var callResult []any
 
-		flags := pflag.NewFlagSet("facet-selectors", pflag.ContinueOnError)
-		flags.StringVarP(&addressString, "address", "", "", "Facet address")
-		err := flags.Parse(args[1:])
-
+		addressString, err := flags.GetString("address")
 		if err != nil {
-			fmt.Println("invalid arguments for facet-selectors command")
+			fmt.Println("invalid address flag")
 			return
 		}
 
@@ -103,15 +96,11 @@ func (box *DiamondBox) loupeExecutor(s string) {
 
 	case "facet-address":
 		var functionSelector SelectorFlag
-		var selectorString string
 		var callResult []any
 
-		flags := pflag.NewFlagSet("facet-address", pflag.ContinueOnError)
-		flags.StringVarP(&selectorString, "selector", "", "", "Function selector")
-		err := flags.Parse(args[1:])
-
+		selectorString, err := flags.GetString("selector")
 		if err != nil {
-			fmt.Println("invalid arguments for facet-address command")
+			fmt.Println("invalid selector flag")
 			return
 		}
 
@@ -138,18 +127,14 @@ func (box *DiamondBox) loupeExecutor(s string) {
 
 	case "supports-interface":
 		var interfaceId SelectorFlag
-		var interfaceIdString string
 		var callResult []any
 
-		flags := pflag.NewFlagSet("supports-interface", pflag.ContinueOnError)
-		flags.StringVarP(&interfaceIdString, "id", "", "", "Interface identifier")
-		err := flags.Parse(args[1:])
-
+		interfaceIdString, err := flags.GetString("id")
 		if err != nil {
-			fmt.Println("invalid arguments for supports-interface command")
+			fmt.Println("invalid id flag")
 			return
 		}
-
+		
 		if err := interfaceId.Set(interfaceIdString); err != nil {
 			fmt.Printf("invalid id format: %v\n", err)
 			return
@@ -170,16 +155,6 @@ func (box *DiamondBox) loupeExecutor(s string) {
 		status := *abi.ConvertType(callResult[0], new(bool)).(*bool)
 
 		fmt.Println("ERC-165 status:", status)
-
-	case "help":
-		box.mode.printUsage()
-
-	case "exit":
-		fmt.Println("Exiting...")
-		os.Exit(0)
-
-	default:
-		fmt.Printf("unknown command: %s\n", s)
 	}
 }
 

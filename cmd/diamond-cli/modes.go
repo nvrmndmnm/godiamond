@@ -9,7 +9,7 @@ var modes []*Command = []*Command{
 				Description: "Deploy a new diamond",
 				SubCommands: []*Command{
 					{
-						Name:        "--owner=",
+						Name:        "owner",
 						Description: "Specify the Ethereum address of the owner",
 					},
 				},
@@ -19,11 +19,11 @@ var modes []*Command = []*Command{
 				Description: "Deploy a facet to use in an existing diamond",
 				SubCommands: []*Command{
 					{
-						Name:        "--metadata=",
+						Name:        "metadata",
 						Description: "Path to contract metadata file",
 					},
 					{
-						Name:        "--constructor-args=",
+						Name:        "constructor-args",
 						Description: "Comma-separated list of constructor arguments",
 					},
 				},
@@ -44,11 +44,11 @@ var modes []*Command = []*Command{
 				Description: "Add a new facet with specified function selectors",
 				SubCommands: []*Command{
 					{
-						Name:        "--address=",
+						Name:        "address",
 						Description: "Specify the Ethereum address of a facet",
 					},
 					{
-						Name:        "--selectors=",
+						Name:        "selectors",
 						Description: "Specify the function selectors",
 					},
 				},
@@ -58,11 +58,11 @@ var modes []*Command = []*Command{
 				Description: "Replace selectors of an existing facet",
 				SubCommands: []*Command{
 					{
-						Name:        "--address=",
+						Name:        "address",
 						Description: "Specify the Ethereum address of a facet",
 					},
 					{
-						Name:        "--selectors=",
+						Name:        "selectors",
 						Description: "Specify the function selectors",
 					},
 				},
@@ -72,7 +72,7 @@ var modes []*Command = []*Command{
 				Description: "Remove selectors from the diamond",
 				SubCommands: []*Command{
 					{
-						Name:        "--selectors=",
+						Name:        "selectors",
 						Description: "Specify the function selectors",
 					},
 				},
@@ -96,7 +96,7 @@ var modes []*Command = []*Command{
 				Description: "Show all function selectors provided by a facet",
 				SubCommands: []*Command{
 					{
-						Name:        "--address=",
+						Name:        "address",
 						Description: "Specify the Ethereum address of a facet",
 					},
 				},
@@ -106,7 +106,7 @@ var modes []*Command = []*Command{
 				Description: "Show the facet that supports the given selector",
 				SubCommands: []*Command{
 					{
-						Name:        "--selector=",
+						Name:        "selector",
 						Description: "Specify the function selector",
 					},
 				},
@@ -116,7 +116,7 @@ var modes []*Command = []*Command{
 				Description: "Show if the contract implements an interface",
 				SubCommands: []*Command{
 					{
-						Name:        "--id=",
+						Name:        "id",
 						Description: "Specify the interface identifier",
 					},
 				},
@@ -132,7 +132,7 @@ var modes []*Command = []*Command{
 				Description: "Deploy a new diamond",
 				SubCommands: []*Command{
 					{
-						Name:        "--owner=",
+						Name:        "owner",
 						Description: "Specify the Ethereum address of the owner",
 					},
 				},

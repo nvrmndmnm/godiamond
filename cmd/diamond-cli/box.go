@@ -7,7 +7,6 @@ import (
 	"math/big"
 	"os"
 
-	"github.com/c-bata/go-prompt"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -92,24 +91,13 @@ func NewDiamondBox(config Config, modeName string, rpc string, chainId *big.Int)
 		return nil, err
 	}
 	box.auth.GasPrice = gasPrice
-	
+
 	box.mode = selectMode(modeName)
 	if box.mode == nil {
-		return nil, fmt.Errorf("mode not found")
+		printUsage()
+		return nil, fmt.Errorf("mode does not exist")
 	}
 
-	modeExecutors := map[string]prompt.Executor{
-		"deploy": box.deployExecutor,
-		"cut":    box.cutExecutor,
-		"loupe":  box.loupeExecutor,
-	}
-	
-	executor, ok := modeExecutors[modeName]
-	if !ok {
-		return nil, fmt.Errorf("mode executor not found")
-	}
-
-	box.mode.executor = executor
 	return box, nil
 }
 

@@ -2,16 +2,17 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/c-bata/go-prompt"
+	"github.com/spf13/pflag"
 )
 
 type Command struct {
 	Name        string
 	Description string
 	SubCommands []*Command
-	executor    prompt.Executor
 }
 
 func (c *Command) completer(d prompt.Document) []prompt.Suggest {
@@ -33,19 +34,72 @@ func (c *Command) completer(d prompt.Document) []prompt.Suggest {
 
 outer:
 	for _, cmd := range commands {
-		for _, arg := range args {
+		name := cmd.Name
+
+		for i, arg := range args {
 			if strings.Contains(arg, cmd.Name) {
 				continue outer
+			}
+
+			if i > 0 {
+				name = "--" + cmd.Name + "="
 			}
 		}
 
 		suggestions = append(suggestions, prompt.Suggest{
-			Text:        cmd.Name,
+			Text:        name,
 			Description: cmd.Description,
 		})
 	}
 
 	return suggestions
+}
+
+func (box *DiamondBox) executor(s string) {
+	s = strings.TrimSpace(s)
+	args := strings.Split(s, " ")
+	var cmd *Command
+
+	for _, c := range box.mode.SubCommands {
+		if c.Name == args[0] {
+			cmd = c
+			break
+		}
+	}
+
+	if cmd == nil {
+		fmt.Printf("Unknown command: %s\n", args[0])
+		return
+	}
+
+	switch cmd.Name {
+	case "help":
+		box.mode.printUsage()
+		return
+	case "exit":
+		fmt.Println("Exiting...")
+		os.Exit(0)
+	}
+
+	flags := pflag.NewFlagSet(cmd.Name, pflag.ContinueOnError)
+	for _, subCmd := range cmd.SubCommands {
+		flags.String(subCmd.Name, "", subCmd.Description)
+	}
+
+	err := flags.Parse(args[1:])
+	if err != nil {
+		fmt.Println("Invalid arguments for a command", err)
+		return
+	}
+
+	switch box.mode.Name {
+	case "deploy":
+		box.modeDeploy(cmd, flags)
+	case "cut":
+		box.modeCut(cmd, flags)
+	case "loupe":
+		box.modeLoupe(cmd, flags)
+	}
 }
 
 func (c *Command) printUsage() {
@@ -60,7 +114,8 @@ func (c *Command) printUsage() {
 	for _, cmd := range c.SubCommands {
 		if len(cmd.SubCommands) > 0 {
 			for _, subCmd := range cmd.SubCommands {
-				fmt.Printf("    %s\t\t%s\n", subCmd.Name, subCmd.Description)
+				//TODO: add line-length dependent spaces, ignore duplicates
+				fmt.Printf("    %s\t\t%s\n", "--"+subCmd.Name+"=", subCmd.Description)
 			}
 		}
 	}
@@ -69,7 +124,7 @@ func (c *Command) printUsage() {
 func (box *DiamondBox) run() {
 	fmt.Println("Please enter a command. Type 'exit' to quit.")
 	p := prompt.New(
-		box.mode.executor,
+		box.executor,
 		box.mode.completer,
 		prompt.OptionPrefix("> "),
 		prompt.OptionTitle(box.mode.Name),
