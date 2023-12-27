@@ -51,19 +51,19 @@ func (box *DiamondBox) cutExecutor(s string) {
 		err := flags.Parse(args[1:])
 
 		if err != nil {
-			fmt.Println("Error: invalid arguments for cut add command")
+			fmt.Println("invalid arguments for cut add command")
 			return
 		}
 
 		if args[0] == "add" || args[0] == "replace" {
 			if err := facetAddress.Set(addressString); err != nil {
-				fmt.Printf("Error: invalid Ethereum address format: %v\n", err)
+				fmt.Printf("invalid Ethereum address format: %v\n", err)
 				return
 			}
 		}
 
 		if err := functionSelectors.Set(selectorString); err != nil {
-			fmt.Printf("Error: invalid selector format: %v\n", err)
+			fmt.Printf("invalid selector format: %v\n", err)
 			return
 		}
 
@@ -99,6 +99,6 @@ func (box *DiamondBox) cutExecutor(s string) {
 		os.Exit(0)
 
 	default:
-		fmt.Printf("Unknown command: %s\n", s)
+		fmt.Printf("unknown command: %s\n", s)
 	}
 }

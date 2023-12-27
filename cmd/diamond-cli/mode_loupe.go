@@ -31,7 +31,7 @@ func (box *DiamondBox) loupeExecutor(s string) {
 		var callResult []any
 		err := loupe.Call(&bind.CallOpts{}, &callResult, "facets")
 		if err != nil {
-			fmt.Println("Error: getting facets of a diamond", err)
+			fmt.Println("getting facets of a diamond", err)
 		}
 
 		facets := *abi.ConvertType(callResult[0], new([]LoupeFacet)).(*[]LoupeFacet)
@@ -42,7 +42,7 @@ func (box *DiamondBox) loupeExecutor(s string) {
 
 			selectorsMetadata, err := getSelectorsMetadata(facet.FunctionSelectors)
 			if err != nil {
-				fmt.Println("Error: could not retrieve selector metadata", err)
+				fmt.Println("could not retrieve selector metadata", err)
 				return
 			}
 			for selector, functionName := range selectorsMetadata {
@@ -56,7 +56,7 @@ func (box *DiamondBox) loupeExecutor(s string) {
 		var callResult []any
 		err := loupe.Call(&bind.CallOpts{}, &callResult, "facetAddresses")
 		if err != nil {
-			fmt.Println("Error: getting addresses of the facets", err)
+			fmt.Println("getting addresses of the facets", err)
 		}
 
 		facetAddreses := *abi.ConvertType(callResult[0], new([]common.Address)).(*[]common.Address)
@@ -75,25 +75,25 @@ func (box *DiamondBox) loupeExecutor(s string) {
 		err := flags.Parse(args[1:])
 
 		if err != nil {
-			fmt.Println("Error: invalid arguments for facet-selectors command")
+			fmt.Println("invalid arguments for facet-selectors command")
 			return
 		}
 
 		if err := facetAddress.Set(addressString); err != nil {
-			fmt.Printf("Error: invalid Ethereum address format: %v\n", err)
+			fmt.Printf("invalid Ethereum address format: %v\n", err)
 			return
 		}
 
 		err = loupe.Call(&bind.CallOpts{}, &callResult, "facetFunctionSelectors", common.Address(facetAddress))
 		if err != nil {
-			fmt.Println("Error: getting facet selectors", err)
+			fmt.Println("getting facet selectors", err)
 		}
 
 		facetSelectors := *abi.ConvertType(callResult[0], new([][4]byte)).(*[][4]byte)
 
 		selectorsMetadata, err := getSelectorsMetadata(facetSelectors)
 		if err != nil {
-			fmt.Println("Error: could not retrieve selector metadata", err)
+			fmt.Println("could not retrieve selector metadata", err)
 			return
 		}
 
@@ -111,17 +111,17 @@ func (box *DiamondBox) loupeExecutor(s string) {
 		err := flags.Parse(args[1:])
 
 		if err != nil {
-			fmt.Println("Error: invalid arguments for facet-address command")
+			fmt.Println("invalid arguments for facet-address command")
 			return
 		}
 
 		if err := functionSelector.Set(selectorString); err != nil {
-			fmt.Printf("Error: invalid selector format: %v\n", err)
+			fmt.Printf("invalid selector format: %v\n", err)
 			return
 		}
 
 		if len(functionSelector) > 1 {
-			fmt.Println("Error: provide a single selector")
+			fmt.Println("provide a single selector")
 			return
 		}
 
@@ -129,7 +129,7 @@ func (box *DiamondBox) loupeExecutor(s string) {
 
 		err = loupe.Call(&bind.CallOpts{}, &callResult, "facetAddress", selector)
 		if err != nil {
-			fmt.Println("Error: getting facet address", err)
+			fmt.Println("getting facet address", err)
 		}
 
 		facetAddress := *abi.ConvertType(callResult[0], new(common.Address)).(*common.Address)
@@ -146,17 +146,17 @@ func (box *DiamondBox) loupeExecutor(s string) {
 		err := flags.Parse(args[1:])
 
 		if err != nil {
-			fmt.Println("Error: invalid arguments for supports-interface command")
+			fmt.Println("invalid arguments for supports-interface command")
 			return
 		}
 
 		if err := interfaceId.Set(interfaceIdString); err != nil {
-			fmt.Printf("Error: invalid id format: %v\n", err)
+			fmt.Printf("invalid id format: %v\n", err)
 			return
 		}
 
 		if len(interfaceId) > 1 {
-			fmt.Println("Error: provide a single identifier")
+			fmt.Println("provide a single identifier")
 			return
 		}
 
@@ -164,7 +164,7 @@ func (box *DiamondBox) loupeExecutor(s string) {
 
 		err = loupe.Call(&bind.CallOpts{}, &callResult, "supportsInterface", id)
 		if err != nil {
-			fmt.Println("Error: checking interface support", err)
+			fmt.Println("checking interface support", err)
 		}
 
 		status := *abi.ConvertType(callResult[0], new(bool)).(*bool)
@@ -179,7 +179,7 @@ func (box *DiamondBox) loupeExecutor(s string) {
 		os.Exit(0)
 
 	default:
-		fmt.Printf("Unknown command: %s\n", s)
+		fmt.Printf("unknown command: %s\n", s)
 	}
 }
 

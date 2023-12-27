@@ -52,13 +52,13 @@ func NewDiamondBox(config Config, modeName string, rpc string, chainId *big.Int)
 
 		metadataFile, err := os.ReadFile(contractMeta.MetadataFilePath)
 		if err != nil {
-			fmt.Printf("Error: Failed to read metadata file: %v\n", err)
+			fmt.Printf("failed to read metadata file: %v\n", err)
 			return nil, err
 		}
 
 		err = json.Unmarshal(metadataFile, &contractMetadata)
 		if err != nil {
-			fmt.Printf("Error: Failed to unmarshal metadata file: %v\n", err)
+			fmt.Printf("failed to unmarshal metadata file: %v\n", err)
 			return nil, err
 		}
 

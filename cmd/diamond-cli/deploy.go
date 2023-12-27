@@ -63,7 +63,7 @@ func (box *DiamondBox) deployContract(contractIdentifier string, params ...any) 
 func writeDeploymentDataToFile(data *DeploymentData) {
 	jsonData, err := json.MarshalIndent(data, "", "    ")
 	if err != nil {
-		fmt.Println("Error marshaling deployment data", err)
+		fmt.Println("error marshaling deployment data", err)
 		return
 	}
 
@@ -81,7 +81,7 @@ func writeDeploymentDataToFile(data *DeploymentData) {
 
 	err = os.WriteFile(fileName, jsonData, 0644)
 	if err != nil {
-		fmt.Println("Error writing deployment data", err)
+		fmt.Println("error writing deployment data", err)
 	}
 
 }

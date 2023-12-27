@@ -26,7 +26,6 @@ func (c *Config) validateStandardContracts() error {
 	standardContracts := []string{"diamond", "diamond_init", "cut_facet", "loupe_facet"}
 	for _, contract := range standardContracts {
 		if _, ok := c.Contracts[contract]; !ok {
-			fmt.Println(c.Contracts)
 			return fmt.Errorf("missing mandatory ERC-2535 contract: %s", contract)
 		}
 	}

@@ -30,7 +30,7 @@ Usage:
 	diamond-cli help
 
 Options:
-    --rpc <name>          string    RPC identifier
+    --rpc <name>          string    RPC identifier (required)
     --chain-id <id>       int       Chain ID (default: -1, will auto-detect)
     -c --config <path>    string    Load config file (default: "config.yaml")
     -d --debug                      Enable debug mode (default: disabled)
@@ -44,7 +44,7 @@ func main() {
 
 	pflag.Usage = printUsage
 	pflag.StringVarP(&args.ValueConfig, "config", "c", "config.yaml", "Load config file")
-	pflag.StringVar(&args.ValueRPC, "rpc", "", "RPC identifier")
+	pflag.StringVar(&args.ValueRPC, "rpc", "local", "RPC identifier")
 	pflag.Int64Var(&args.ValueChainID, "chain-id", -1, "Chain id.")
 	pflag.BoolVarP(&args.FlagDebug, "debug", "d", false, "Enable debug mode")
 
@@ -52,13 +52,13 @@ func main() {
 
 	logger, err := zap.NewProduction()
 	if err != nil {
-		log.Fatalf("Error: failed to initialize logger: %v", err)
+		log.Fatalf("failed to initialize logger: %v", err)
 	}
 
 	if args.FlagDebug {
 		logger, err = zap.NewDevelopment()
 		if err != nil {
-			log.Fatalf("Error: failed to initialize debug logger: %v", err)
+			log.Fatalf("failed to initialize debug logger: %v", err)
 		}
 	}
 
@@ -67,22 +67,22 @@ func main() {
 
 	k := koanf.New(".")
 	if err := k.Load(file.Provider(args.ValueConfig), yaml.Parser()); err != nil {
-		sugar.Fatalf("Error: failed to load config: %v", err)
+		sugar.Fatalf("failed to load config: %v", err)
 	}
 
 	var config Config
 
 	if err := k.Unmarshal("", &config); err != nil {
-		sugar.Fatalf("Error: failed to unmarshal config: %v", err)
+		sugar.Fatalf("failed to unmarshal config: %v", err)
 	}
 
 	err = config.validateStandardContracts()
 	if err != nil {
-		sugar.Fatalf("Error: failed to validate config: %v", err)
+		sugar.Fatalf("failed to validate config: %v", err)
 	}
 
 	if len(os.Args) < 2 {
-		sugar.Error("Error: no arguments provided")
+		sugar.Error("no arguments provided")
 		pflag.Usage()
 	}
 
@@ -93,18 +93,22 @@ func main() {
 
 	mode := os.Args[1]
 
-	//TODO: decide if rpc is needed to be an argument
-	// if args.ValueRPC == "" {
-	// 	sugar.Error("Error: the rpc flag is required")
-	// 	pflag.Usage()
-	// }
+	if args.ValueRPC == "" {
+		sugar.Fatal("the RPC flag is required")
+		pflag.Usage()
+	}
+
+	_, ok := config.RPC[args.ValueRPC]
+	if !ok {
+		sugar.Fatal("provided RPC identifier is not in config")
+	}
 
 	chainId := new(big.Int)
 	chainId.SetInt64(args.ValueChainID)
 
-	box, err := NewDiamondBox(config, mode, "local", chainId)
+	box, err := NewDiamondBox(config, mode, args.ValueRPC, chainId)
 	if err != nil {
-		sugar.Fatalf("Error: couldn't fill the box with treasures: %v", err)
+		sugar.Fatalf("couldn't fill the box with treasures: %v", err)
 	}
 
 	defer box.Close()
