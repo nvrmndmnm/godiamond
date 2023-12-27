@@ -28,7 +28,7 @@ type ContractMetadata struct {
 
 type DiamondBox struct {
 	config    Config
-	mode      *Command
+	mode      Mode
 	client    *ethclient.Client
 	auth      *bind.TransactOpts
 	rpcName   string
@@ -92,7 +92,9 @@ func NewDiamondBox(config Config, modeName string, rpc string, chainId *big.Int)
 	}
 	box.auth.GasPrice = gasPrice
 
-	box.mode = selectMode(modeName)
+	factory := NewModeFactory(box)
+
+	box.mode = factory.CreateMode(modeName)
 	if box.mode == nil {
 		printUsage()
 		return nil, fmt.Errorf("mode does not exist")

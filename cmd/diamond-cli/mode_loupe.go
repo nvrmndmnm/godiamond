@@ -10,6 +10,11 @@ import (
 	"github.com/spf13/pflag"
 )
 
+type LoupeMode struct {
+	commands *Command
+	box      *DiamondBox
+}
+
 type SelectorsMetadata map[string]string
 
 type LoupeFacet struct {
@@ -17,10 +22,67 @@ type LoupeFacet struct {
 	FunctionSelectors [][4]byte
 }
 
-func (box *DiamondBox) modeLoupe(cmd *Command, flags *pflag.FlagSet) {
+func NewLoupeMode(box *DiamondBox) Mode {
+	commands := &Command{
+		Name: "loupe",
+		SubCommands: []*Command{
+			{
+				Name:        "facets",
+				Description: "Show all facets and their selectors",
+			},
+			{
+				Name:        "addresses",
+				Description: "Show all facet addresses used by a diamond",
+			},
+			{
+				Name:        "facet-selectors",
+				Description: "Show all function selectors provided by a facet",
+				SubCommands: []*Command{
+					{
+						Name:        "address",
+						Description: "Specify the Ethereum address of a facet",
+					},
+				},
+			},
+			{
+				Name:        "facet-address",
+				Description: "Show the facet that supports the given selector",
+				SubCommands: []*Command{
+					{
+						Name:        "selector",
+						Description: "Specify the function selector",
+					},
+				},
+			},
+			{
+				Name:        "supports-interface",
+				Description: "Show if the contract implements an interface",
+				SubCommands: []*Command{
+					{
+						Name:        "id",
+						Description: "Specify the interface identifier",
+					},
+				},
+			},
+		},
+	}
 
-	loupe := bind.NewBoundContract(box.config.Contracts["diamond"].Address,
-		box.contracts["loupe_facet"].ABI, box.client, box.client, box.client)
+	commands.SubCommands = append(commands.SubCommands, defaultCommands.SubCommands...)
+
+	return &LoupeMode{commands: commands, box: box}
+}
+
+func (l *LoupeMode) GetCommands() *Command {
+	return l.commands
+}
+
+func (l *LoupeMode) PrintUsage() {
+	PrintUsage(l.commands)
+}
+
+func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) {
+	loupe := bind.NewBoundContract(l.box.config.Contracts["diamond"].Address,
+		l.box.contracts["loupe_facet"].ABI, l.box.client, l.box.client, l.box.client)
 
 	switch cmd.Name {
 	case "facets":
@@ -42,6 +104,7 @@ func (box *DiamondBox) modeLoupe(cmd *Command, flags *pflag.FlagSet) {
 				fmt.Println("could not retrieve selector metadata", err)
 				return
 			}
+			
 			for selector, functionName := range selectorsMetadata {
 				fmt.Printf("\t%s: %s \n", selector, functionName)
 			}
@@ -54,6 +117,7 @@ func (box *DiamondBox) modeLoupe(cmd *Command, flags *pflag.FlagSet) {
 		err := loupe.Call(&bind.CallOpts{}, &callResult, "facetAddresses")
 		if err != nil {
 			fmt.Println("getting addresses of the facets", err)
+			return
 		}
 
 		facetAddreses := *abi.ConvertType(callResult[0], new([]common.Address)).(*[]common.Address)
@@ -80,6 +144,7 @@ func (box *DiamondBox) modeLoupe(cmd *Command, flags *pflag.FlagSet) {
 		err = loupe.Call(&bind.CallOpts{}, &callResult, "facetFunctionSelectors", common.Address(facetAddress))
 		if err != nil {
 			fmt.Println("getting facet selectors", err)
+			return
 		}
 
 		facetSelectors := *abi.ConvertType(callResult[0], new([][4]byte)).(*[][4]byte)
@@ -119,6 +184,7 @@ func (box *DiamondBox) modeLoupe(cmd *Command, flags *pflag.FlagSet) {
 		err = loupe.Call(&bind.CallOpts{}, &callResult, "facetAddress", selector)
 		if err != nil {
 			fmt.Println("getting facet address", err)
+			return
 		}
 
 		facetAddress := *abi.ConvertType(callResult[0], new(common.Address)).(*common.Address)
@@ -134,7 +200,7 @@ func (box *DiamondBox) modeLoupe(cmd *Command, flags *pflag.FlagSet) {
 			fmt.Println("invalid id flag")
 			return
 		}
-		
+
 		if err := interfaceId.Set(interfaceIdString); err != nil {
 			fmt.Printf("invalid id format: %v\n", err)
 			return
@@ -150,6 +216,7 @@ func (box *DiamondBox) modeLoupe(cmd *Command, flags *pflag.FlagSet) {
 		err = loupe.Call(&bind.CallOpts{}, &callResult, "supportsInterface", id)
 		if err != nil {
 			fmt.Println("checking interface support", err)
+			return
 		}
 
 		status := *abi.ConvertType(callResult[0], new(bool)).(*bool)

@@ -60,7 +60,7 @@ func (box *DiamondBox) executor(s string) {
 	args := strings.Split(s, " ")
 	var cmd *Command
 
-	for _, c := range box.mode.SubCommands {
+	for _, c := range box.mode.GetCommands().SubCommands {
 		if c.Name == args[0] {
 			cmd = c
 			break
@@ -74,7 +74,7 @@ func (box *DiamondBox) executor(s string) {
 
 	switch cmd.Name {
 	case "help":
-		box.mode.printUsage()
+		box.mode.PrintUsage()
 		return
 	case "exit":
 		fmt.Println("Exiting...")
@@ -92,43 +92,17 @@ func (box *DiamondBox) executor(s string) {
 		return
 	}
 
-	switch box.mode.Name {
-	case "deploy":
-		box.modeDeploy(cmd, flags)
-	case "cut":
-		box.modeCut(cmd, flags)
-	case "loupe":
-		box.modeLoupe(cmd, flags)
-	}
-}
-
-func (c *Command) printUsage() {
-	fmt.Printf("\nCommands:\n")
-
-	for _, cmd := range c.SubCommands {
-		fmt.Printf("    %s\t\t%s\n", cmd.Name, cmd.Description)
-	}
-
-	fmt.Printf("\nArguments:\n")
-
-	for _, cmd := range c.SubCommands {
-		if len(cmd.SubCommands) > 0 {
-			for _, subCmd := range cmd.SubCommands {
-				//TODO: add line-length dependent spaces, ignore duplicates
-				fmt.Printf("    %s\t\t%s\n", "--"+subCmd.Name+"=", subCmd.Description)
-			}
-		}
-	}
+	box.mode.Execute(cmd, flags)
 }
 
 func (box *DiamondBox) run() {
 	fmt.Println("Please enter a command. Type 'exit' to quit.")
 	p := prompt.New(
 		box.executor,
-		box.mode.completer,
+		box.mode.GetCommands().completer,
 		prompt.OptionPrefix("> "),
-		prompt.OptionTitle(box.mode.Name),
-		prompt.OptionMaxSuggestion(uint16(len(box.mode.SubCommands))),
+		prompt.OptionTitle(box.mode.GetCommands().Name),
+		prompt.OptionMaxSuggestion(uint16(len(box.mode.GetCommands().SubCommands))),
 		prompt.OptionSuggestionBGColor(prompt.Black),
 		prompt.OptionSuggestionTextColor(prompt.LightGray),
 		prompt.OptionDescriptionBGColor(prompt.Black),
