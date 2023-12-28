@@ -68,7 +68,7 @@ func (box *DiamondBox) executor(s string) {
 	}
 
 	if cmd == nil {
-		fmt.Printf("Unknown command: %s\n", args[0])
+		box.sugar.Errorf("unknown command: %s\n", args[0])
 		return
 	}
 
@@ -77,7 +77,6 @@ func (box *DiamondBox) executor(s string) {
 		box.mode.PrintUsage()
 		return
 	case "exit":
-		fmt.Println("Exiting...")
 		os.Exit(0)
 	}
 
@@ -88,11 +87,15 @@ func (box *DiamondBox) executor(s string) {
 
 	err := flags.Parse(args[1:])
 	if err != nil {
-		fmt.Println("Invalid arguments for a command", err)
+		box.sugar.Errorf("invalid arguments for a command: %v\n", err)
 		return
 	}
 
-	box.mode.Execute(cmd, flags)
+	err = box.mode.Execute(cmd, flags)
+	if err != nil {
+		box.sugar.Errorf("mode execution error: %v\n", err)
+		return
+	}
 }
 
 func (box *DiamondBox) run() {

@@ -29,9 +29,8 @@ func (b *SelectorFlag) Set(value string) error {
 	for _, v := range values {
 		v = strings.TrimPrefix(v, "0x")
 		decoded, err := hex.DecodeString(strings.TrimSpace(v))
-
 		if err != nil {
-			return fmt.Errorf("error decoding hex: %v", err)
+			return fmt.Errorf("failed to decode hex: %v", err)
 		}
 
 		if len(decoded) != 4 {
@@ -44,16 +43,12 @@ func (b *SelectorFlag) Set(value string) error {
 	return nil
 }
 
-func (b *SelectorFlag) Type() string {
-	return fmt.Sprintf("%T", b)
-}
-
 func (f *AddressFlag) Set(value string) error {
 	trimmedValue := strings.TrimSpace(value)
 	address := common.HexToAddress(trimmedValue)
 
 	if address == (common.Address{}) {
-		return fmt.Errorf("invalid Ethereum address: %s", trimmedValue)
+		return fmt.Errorf("failed to convert '%s' to hex", trimmedValue)
 	}
 	*f = AddressFlag(address)
 

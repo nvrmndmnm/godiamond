@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"go.uber.org/zap"
 )
 
 type ContractMetadata struct {
@@ -28,6 +29,7 @@ type ContractMetadata struct {
 
 type DiamondBox struct {
 	config    Config
+	sugar     *zap.SugaredLogger
 	mode      Mode
 	client    *ethclient.Client
 	auth      *bind.TransactOpts
@@ -36,11 +38,17 @@ type DiamondBox struct {
 	contracts map[string]ContractMetadata
 }
 
-func NewDiamondBox(config Config, modeName string, rpc string, chainId *big.Int) (*DiamondBox, error) {
+func NewDiamondBox(config Config,
+	sugar *zap.SugaredLogger,
+	modeName string,
+	rpc string,
+	chainId *big.Int,
+) (*DiamondBox, error) {
 	var err error
 
 	box := &DiamondBox{
 		config:    config,
+		sugar:     sugar,
 		rpcName:   rpc,
 		chainId:   chainId,
 		contracts: make(map[string]ContractMetadata),
@@ -51,14 +59,12 @@ func NewDiamondBox(config Config, modeName string, rpc string, chainId *big.Int)
 
 		metadataFile, err := os.ReadFile(contractMeta.MetadataFilePath)
 		if err != nil {
-			fmt.Printf("failed to read metadata file: %v\n", err)
-			return nil, err
+			return nil, fmt.Errorf("failed to read metadata file: %v", err)
 		}
 
 		err = json.Unmarshal(metadataFile, &contractMetadata)
 		if err != nil {
-			fmt.Printf("failed to unmarshal metadata file: %v\n", err)
-			return nil, err
+			return nil, fmt.Errorf("failed to unmarshal metadata file: %v", err)
 		}
 
 		box.contracts[contractIdentifier] = contractMetadata

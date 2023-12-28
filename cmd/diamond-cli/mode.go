@@ -11,7 +11,7 @@ type ModeFactory struct {
 }
 
 type Mode interface {
-	Execute(cmd *Command, flags *pflag.FlagSet)
+	Execute(cmd *Command, flags *pflag.FlagSet) error
 	GetCommands() *Command
 	PrintUsage()
 }

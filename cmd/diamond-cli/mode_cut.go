@@ -83,13 +83,13 @@ func (c *CutMode) PrintUsage() {
 	PrintUsage(c.commands)
 }
 
-func (c *CutMode) Execute(cmd *Command, flags *pflag.FlagSet) {
+func (c *CutMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
 	diamondCut := bind.NewBoundContract(c.box.config.Contracts["diamond"].Address,
 		c.box.contracts["cut_facet"].ABI, c.box.client, c.box.client, c.box.client)
 
 	calldata, err := c.box.contracts["diamond_init"].ABI.Pack("init")
 	if err != nil {
-		fmt.Println(err)
+		return fmt.Errorf("failed to pack calldata: %v", err)
 	}
 
 	var cut []FacetCut
@@ -103,25 +103,21 @@ func (c *CutMode) Execute(cmd *Command, flags *pflag.FlagSet) {
 		if cmd.Name == "add" || cmd.Name == "replace" {
 			addressString, err := flags.GetString("address")
 			if err != nil {
-				fmt.Println("invalid address flag")
-				return
+				return fmt.Errorf("invalid address flag: %v", err)
 			}
 
 			if err := facetAddress.Set(addressString); err != nil {
-				fmt.Printf("invalid Ethereum address format: %v\n", err)
-				return
+				return fmt.Errorf("invalid Ethereum address format: %v", err)
 			}
 		}
 
 		selectorString, err := flags.GetString("selectors")
 		if err != nil {
-			fmt.Println("invalid selector flag")
-			return
+			return fmt.Errorf("invalid selector flag: %v", err)
 		}
 
 		if err := functionSelectors.Set(selectorString); err != nil {
-			fmt.Printf("invalid selector format: %v\n", err)
-			return
+			return fmt.Errorf("invalid selector format: %v", err)
 		}
 
 		switch cmd.Name {
@@ -142,10 +138,11 @@ func (c *CutMode) Execute(cmd *Command, flags *pflag.FlagSet) {
 		tx, err := diamondCut.Transact(c.box.auth, "diamondCut", cut,
 			c.box.config.Contracts["diamond_init"].Address, calldata)
 		if err != nil {
-			fmt.Println(err)
-			return
+			return fmt.Errorf("failed to cut diamond: %v", err)
 		}
 
-		fmt.Println(tx.Hash())
+		fmt.Printf("Cut successful\ntx: %s\n", tx.Hash())
 	}
+
+	return nil
 }

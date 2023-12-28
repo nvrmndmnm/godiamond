@@ -80,7 +80,7 @@ func (l *LoupeMode) PrintUsage() {
 	PrintUsage(l.commands)
 }
 
-func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) {
+func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
 	loupe := bind.NewBoundContract(l.box.config.Contracts["diamond"].Address,
 		l.box.contracts["loupe_facet"].ABI, l.box.client, l.box.client, l.box.client)
 
@@ -89,8 +89,7 @@ func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) {
 		var callResult []any
 		err := loupe.Call(&bind.CallOpts{}, &callResult, "facets")
 		if err != nil {
-			fmt.Println("error getting facets of a diamond:", err)
-			return
+			return fmt.Errorf("failed to get facets of a diamond: %v", err)
 		}
 
 		facets := *abi.ConvertType(callResult[0], new([]LoupeFacet)).(*[]LoupeFacet)
@@ -101,10 +100,9 @@ func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) {
 
 			selectorsMetadata, err := getSelectorsMetadata(facet.FunctionSelectors)
 			if err != nil {
-				fmt.Println("could not retrieve selector metadata", err)
-				return
+				return fmt.Errorf("failed to get selector metadata: %v", err)
 			}
-			
+
 			for selector, functionName := range selectorsMetadata {
 				fmt.Printf("\t%s: %s \n", selector, functionName)
 			}
@@ -116,8 +114,7 @@ func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) {
 		var callResult []any
 		err := loupe.Call(&bind.CallOpts{}, &callResult, "facetAddresses")
 		if err != nil {
-			fmt.Println("getting addresses of the facets", err)
-			return
+			return fmt.Errorf("failed to get addresses of the facets: %v", err)
 		}
 
 		facetAddreses := *abi.ConvertType(callResult[0], new([]common.Address)).(*[]common.Address)
@@ -132,27 +129,23 @@ func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) {
 
 		addressString, err := flags.GetString("address")
 		if err != nil {
-			fmt.Println("invalid address flag")
-			return
+			return fmt.Errorf("invalid address flag: %v", err)
 		}
 
 		if err := facetAddress.Set(addressString); err != nil {
-			fmt.Printf("invalid Ethereum address format: %v\n", err)
-			return
+			return fmt.Errorf("invalid Ethereum address format: %v", err)
 		}
 
 		err = loupe.Call(&bind.CallOpts{}, &callResult, "facetFunctionSelectors", common.Address(facetAddress))
 		if err != nil {
-			fmt.Println("getting facet selectors", err)
-			return
+			return fmt.Errorf("failed to get facet selectors: %v", err)
 		}
 
 		facetSelectors := *abi.ConvertType(callResult[0], new([][4]byte)).(*[][4]byte)
 
 		selectorsMetadata, err := getSelectorsMetadata(facetSelectors)
 		if err != nil {
-			fmt.Println("could not retrieve selector metadata", err)
-			return
+			return fmt.Errorf("failed to get selector metadata: %v", err)
 		}
 
 		for selector, functionName := range selectorsMetadata {
@@ -165,31 +158,27 @@ func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) {
 
 		selectorString, err := flags.GetString("selector")
 		if err != nil {
-			fmt.Println("invalid selector flag")
-			return
+			return fmt.Errorf("invalid selector flag: %v", err)
 		}
 
 		if err := functionSelector.Set(selectorString); err != nil {
-			fmt.Printf("invalid selector format: %v\n", err)
-			return
+			return fmt.Errorf("invalid selector format: %v", err)
 		}
 
 		if len(functionSelector) > 1 {
-			fmt.Println("provide a single selector")
-			return
+			return fmt.Errorf("a single selector is required")
 		}
 
 		selector := [4]byte(functionSelector[0])
 
 		err = loupe.Call(&bind.CallOpts{}, &callResult, "facetAddress", selector)
 		if err != nil {
-			fmt.Println("getting facet address", err)
-			return
+			return fmt.Errorf("failed to get facet address: %v", err)
 		}
 
 		facetAddress := *abi.ConvertType(callResult[0], new(common.Address)).(*common.Address)
 
-		fmt.Println("facet address: ", facetAddress.String())
+		fmt.Printf("Facet address: %s\n", facetAddress.String())
 
 	case "supports-interface":
 		var interfaceId SelectorFlag
@@ -197,32 +186,30 @@ func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) {
 
 		interfaceIdString, err := flags.GetString("id")
 		if err != nil {
-			fmt.Println("invalid id flag")
-			return
+			return fmt.Errorf("invalid id flag: %v", err)
 		}
 
 		if err := interfaceId.Set(interfaceIdString); err != nil {
-			fmt.Printf("invalid id format: %v\n", err)
-			return
+			return fmt.Errorf("invalid id format: %v", err)
 		}
 
 		if len(interfaceId) > 1 {
-			fmt.Println("provide a single identifier")
-			return
+			return fmt.Errorf("a single identifier is required")
 		}
 
 		id := [4]byte(interfaceId[0])
 
 		err = loupe.Call(&bind.CallOpts{}, &callResult, "supportsInterface", id)
 		if err != nil {
-			fmt.Println("checking interface support", err)
-			return
+			return fmt.Errorf("failed to check interface support: %v", err)
 		}
 
 		status := *abi.ConvertType(callResult[0], new(bool)).(*bool)
 
-		fmt.Println("ERC-165 status:", status)
+		fmt.Printf("ERC-165 status: %v\n", status)
 	}
+
+	return nil
 }
 
 func getSelectorsMetadata(selectors [][4]byte) (SelectorsMetadata, error) {

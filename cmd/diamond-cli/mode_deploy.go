@@ -61,27 +61,24 @@ func (d *DeployMode) PrintUsage() {
 	PrintUsage(d.commands)
 }
 
-func (d *DeployMode) Execute(cmd *Command, flags *pflag.FlagSet) {
+func (d *DeployMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
 	switch cmd.Name {
 	case "diamond":
 		owner, err := flags.GetString("owner")
 		if err != nil {
-			fmt.Println("invalid owner flag")
-			return
+			return fmt.Errorf("invalid owner flag: %v", err)
 		}
 		fmt.Println(owner)
 
 	case "facet":
 		metadataFilePath, err := flags.GetString("metadata")
 		if err != nil {
-			fmt.Println("invalid metadata flag")
-			return
+			return fmt.Errorf("invalid metadata flag: %v", err)
 		}
 
 		constructorArgsStr, err := flags.GetString("constructor-args")
 		if err != nil {
-			fmt.Println("invalid constructor flag")
-			return
+			return fmt.Errorf("invalid constructor flag: %v", err)
 		}
 
 		argsList := strings.Split(constructorArgsStr, ",")
@@ -93,8 +90,7 @@ func (d *DeployMode) Execute(cmd *Command, flags *pflag.FlagSet) {
 
 		deploymentData, err := d.box.deployContract(metadataFilePath, constructorArgsStr)
 		if err != nil {
-			fmt.Println("error deploying the contract:", err)
-			return
+			return fmt.Errorf("failed to deploy the contract: %v", err)
 		}
 
 		writeDeploymentDataToFile(deploymentData)
@@ -102,32 +98,29 @@ func (d *DeployMode) Execute(cmd *Command, flags *pflag.FlagSet) {
 	case "init":
 		cutFacet, err := d.box.deployContract("cut_facet")
 		if err != nil {
-			fmt.Println("error deploying the cut_facet contract:", err)
-			return
+			return fmt.Errorf("failed to deploy the 'cut_facet' contract: %v", err)
 		}
 		writeDeploymentDataToFile(cutFacet)
 
 		owner := d.box.config.Accounts["anvil"].Address
 		diamond, err := d.box.deployContract("diamond", owner, cutFacet.Address)
 		if err != nil {
-			fmt.Println("error deploying the contract:", err)
-			return
+			return fmt.Errorf("failed to deploy the 'diamond' contract: %v", err)
 		}
 		writeDeploymentDataToFile(diamond)
 
 		diamondInit, err := d.box.deployContract("diamond_init")
 		if err != nil {
-			fmt.Println("error deploying the contract:", err)
-			return
+			return fmt.Errorf("failed to deploy the 'diamond_init' contract: %v", err)
 		}
 		writeDeploymentDataToFile(diamondInit)
 
 		loupeFacet, err := d.box.deployContract("loupe_facet")
 		if err != nil {
-			fmt.Println("error deploying the contract:", err)
-			return
+			return fmt.Errorf("failed to deploy the 'loupe_facet' contract: %v", err)
 		}
 		writeDeploymentDataToFile(loupeFacet)
-
 	}
+
+	return nil
 }

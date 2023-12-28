@@ -60,11 +60,10 @@ func (box *DiamondBox) deployContract(contractIdentifier string, params ...any) 
 	return &deploymentData, nil
 }
 
-func writeDeploymentDataToFile(data *DeploymentData) {
+func writeDeploymentDataToFile(data *DeploymentData) error {
 	jsonData, err := json.MarshalIndent(data, "", "    ")
 	if err != nil {
-		fmt.Println("error marshaling deployment data", err)
-		return
+		return fmt.Errorf("failed to marshal deployment data: %v", err)
 	}
 
 	date := time.Now().Format("2006-01-02")
@@ -73,15 +72,15 @@ func writeDeploymentDataToFile(data *DeploymentData) {
 
 	err = os.MkdirAll(dirName, 0755)
 	if err != nil {
-		fmt.Println("Failed to create directory", err)
-		return
+		return fmt.Errorf("failed to create a directory: %v", err)
 	}
 
 	fileName := dirName + data.Name + "-" + time + ".json"
 
 	err = os.WriteFile(fileName, jsonData, 0644)
 	if err != nil {
-		fmt.Println("error writing deployment data", err)
+		return fmt.Errorf("failed to write deployment data: %v", err)
 	}
 
+	return nil
 }

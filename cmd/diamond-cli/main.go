@@ -44,7 +44,7 @@ func main() {
 
 	pflag.Usage = printUsage
 	pflag.StringVarP(&args.ValueConfig, "config", "c", "config.yaml", "Load config file")
-	pflag.StringVar(&args.ValueRPC, "rpc", "local", "RPC identifier")
+	pflag.StringVar(&args.ValueRPC, "rpc", "", "RPC identifier")
 	pflag.Int64Var(&args.ValueChainID, "chain-id", -1, "Chain id.")
 	pflag.BoolVarP(&args.FlagDebug, "debug", "d", false, "Enable debug mode")
 
@@ -94,19 +94,19 @@ func main() {
 	mode := os.Args[1]
 
 	if args.ValueRPC == "" {
-		sugar.Fatal("the RPC flag is required")
+		sugar.Error("the RPC flag is required")
 		pflag.Usage()
 	}
 
 	_, ok := config.RPC[args.ValueRPC]
 	if !ok {
-		sugar.Fatal("provided RPC identifier is not in config")
+		sugar.Fatal("provided RPC identifier is not in the config")
 	}
 
 	chainId := new(big.Int)
 	chainId.SetInt64(args.ValueChainID)
 
-	box, err := NewDiamondBox(config, mode, args.ValueRPC, chainId)
+	box, err := NewDiamondBox(config, sugar, mode, args.ValueRPC, chainId)
 	if err != nil {
 		sugar.Fatalf("couldn't fill the box with treasures: %v", err)
 	}
