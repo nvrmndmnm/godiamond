@@ -35,11 +35,11 @@ func NewCutMode(box *DiamondBox) Mode {
 				SubCommands: []*Command{
 					{
 						Name:        "address",
-						Description: "Specify the Ethereum address of a facet",
+						Description: "Ethereum address of a facet",
 					},
 					{
 						Name:        "selectors",
-						Description: "Specify the function selectors",
+						Description: "Comma-separated function selectors",
 					},
 				},
 			},
@@ -49,11 +49,11 @@ func NewCutMode(box *DiamondBox) Mode {
 				SubCommands: []*Command{
 					{
 						Name:        "address",
-						Description: "Specify the Ethereum address of a facet",
+						Description: "Ethereum address of a facet",
 					},
 					{
 						Name:        "selectors",
-						Description: "Specify the function selectors",
+						Description: "Comma-separated function selectors",
 					},
 				},
 			},
@@ -63,7 +63,7 @@ func NewCutMode(box *DiamondBox) Mode {
 				SubCommands: []*Command{
 					{
 						Name:        "selectors",
-						Description: "Specify the function selectors",
+						Description: "Comma-separated function selectors",
 					},
 				},
 			},

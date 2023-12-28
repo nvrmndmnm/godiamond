@@ -22,7 +22,7 @@ func NewDeployMode(box *DiamondBox) Mode {
 				SubCommands: []*Command{
 					{
 						Name:        "owner",
-						Description: "Specify the Ethereum address of the owner",
+						Description: "Ethereum address of the owner",
 					},
 				},
 			},
@@ -32,11 +32,11 @@ func NewDeployMode(box *DiamondBox) Mode {
 				SubCommands: []*Command{
 					{
 						Name:        "metadata",
-						Description: "Path to contract metadata file",
+						Description: "Path to the contract metadata file",
 					},
 					{
 						Name:        "constructor-args",
-						Description: "Comma-separated list of constructor arguments",
+						Description: "Comma-separated constructor arguments",
 					},
 				},
 			},

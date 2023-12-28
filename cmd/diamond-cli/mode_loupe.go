@@ -40,7 +40,7 @@ func NewLoupeMode(box *DiamondBox) Mode {
 				SubCommands: []*Command{
 					{
 						Name:        "address",
-						Description: "Specify the Ethereum address of a facet",
+						Description: "Ethereum address of a facet",
 					},
 				},
 			},
@@ -50,7 +50,7 @@ func NewLoupeMode(box *DiamondBox) Mode {
 				SubCommands: []*Command{
 					{
 						Name:        "selector",
-						Description: "Specify the function selector",
+						Description: "Function selector",
 					},
 				},
 			},
@@ -60,7 +60,7 @@ func NewLoupeMode(box *DiamondBox) Mode {
 				SubCommands: []*Command{
 					{
 						Name:        "id",
-						Description: "Specify the interface identifier",
+						Description: "Interface identifier",
 					},
 				},
 			},

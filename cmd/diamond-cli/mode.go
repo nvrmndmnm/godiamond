@@ -50,18 +50,21 @@ func PrintUsage(c *Command) {
 	fmt.Printf("\nCommands:\n")
 
 	for _, cmd := range c.SubCommands {
-		fmt.Printf("    %s\t\t%s\n", cmd.Name, cmd.Description)
+		fmt.Printf("    %-20s %s\n", cmd.Name, cmd.Description)
 	}
 
 	fmt.Printf("\nArguments:\n")
 
+	printedSubCommands := make(map[string]bool)
+
 	for _, cmd := range c.SubCommands {
 		if len(cmd.SubCommands) > 0 {
 			for _, subCmd := range cmd.SubCommands {
-				//TODO: add line-length dependent spaces, ignore duplicates
-				fmt.Printf("    %s\t\t%s\n", "--"+subCmd.Name+"=", subCmd.Description)
+				if _, ok := printedSubCommands[subCmd.Name]; !ok {
+					fmt.Printf("    %-20s %s\n", "--"+subCmd.Name+"=", subCmd.Description)
+					printedSubCommands[subCmd.Name] = true
+				}
 			}
 		}
 	}
 }
-
