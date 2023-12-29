@@ -25,10 +25,10 @@ type DeploymentData struct {
 func (box *DiamondBox) deployContract(contractIdentifier string, params ...any) (*DeploymentData, error) {
 	contractMetadata := box.contracts[contractIdentifier]
 
-	address, tx, _, err := bind.DeployContract(box.auth,
+	address, tx, _, err := bind.DeployContract(box.eth.auth,
 		contractMetadata.ABI,
 		common.FromHex(contractMetadata.Bytecode.Object),
-		box.client, params...)
+		box.eth.client, params...)
 	if err != nil {
 		return nil, err
 	}
@@ -47,11 +47,10 @@ func (box *DiamondBox) deployContract(contractIdentifier string, params ...any) 
 
 	deploymentData := DeploymentData{
 		Address:   address,
-		Deployer:  box.auth.From,
+		Deployer:  box.eth.auth.From,
 		Name:      contractMetadata.AST.Nodes[len(contractMetadata.AST.Nodes)-1].Name,
 		Selectors: facetSelectors,
-		RPC:       box.rpcName,
-		ChainID:   *box.chainId,
+		ChainID:   *box.eth.chainId,
 		TxHash:    tx.Hash().Hex(),
 	}
 

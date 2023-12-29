@@ -82,7 +82,7 @@ func (l *LoupeMode) PrintUsage() {
 
 func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
 	loupe := bind.NewBoundContract(l.box.config.Contracts["diamond"].Address,
-		l.box.contracts["loupe_facet"].ABI, l.box.client, l.box.client, l.box.client)
+		l.box.contracts["loupe_facet"].ABI, l.box.eth.client, l.box.eth.client, l.box.eth.client)
 
 	switch cmd.Name {
 	case "facets":

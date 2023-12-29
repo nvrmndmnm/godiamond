@@ -8,9 +8,6 @@ import (
 	"os"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/zap"
 )
 
@@ -31,17 +28,14 @@ type DiamondBox struct {
 	config    Config
 	sugar     *zap.SugaredLogger
 	mode      Mode
-	client    *ethclient.Client
-	auth      *bind.TransactOpts
-	rpcName   string
-	chainId   *big.Int
+	eth       *EthereumWrapper
 	contracts map[string]ContractMetadata
 }
 
 func NewDiamondBox(config Config,
 	sugar *zap.SugaredLogger,
 	modeName string,
-	rpc string,
+	rpcId string,
 	chainId *big.Int,
 ) (*DiamondBox, error) {
 	var err error
@@ -49,8 +43,6 @@ func NewDiamondBox(config Config,
 	box := &DiamondBox{
 		config:    config,
 		sugar:     sugar,
-		rpcName:   rpc,
-		chainId:   chainId,
 		contracts: make(map[string]ContractMetadata),
 	}
 
@@ -70,33 +62,35 @@ func NewDiamondBox(config Config,
 		box.contracts[contractIdentifier] = contractMetadata
 	}
 
-	box.client, err = ethclient.Dial(config.RPC[box.rpcName])
+	box.eth = &EthereumWrapper{}
+
+	box.eth.client, err = box.eth.Dial(config.RPC[rpcId])
 	if err != nil {
 		return nil, err
 	}
 
 	if chainId.Cmp(big.NewInt(-1)) == 0 {
-		box.chainId, err = box.client.NetworkID(context.Background())
+		box.eth.chainId, err = box.eth.NetworkID(context.Background())
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	privateKey, err := crypto.HexToECDSA(config.Accounts["anvil"].PrivateKey[2:])
+	privateKey, err := box.eth.HexToECDSA(config.Accounts["anvil"].PrivateKey[2:])
 	if err != nil {
 		return nil, err
 	}
 
-	box.auth, err = bind.NewKeyedTransactorWithChainID(privateKey, box.chainId)
+	box.eth.auth, err = box.eth.NewKeyedTransactorWithChainID(privateKey, box.eth.chainId)
 	if err != nil {
 		return nil, err
 	}
 
-	gasPrice, err := box.client.SuggestGasPrice(context.Background())
+	gasPrice, err := box.eth.SuggestGasPrice(context.Background())
 	if err != nil {
 		return nil, err
 	}
-	box.auth.GasPrice = gasPrice
+	box.eth.auth.GasPrice = gasPrice
 
 	factory := NewModeFactory(box)
 
@@ -110,5 +104,5 @@ func NewDiamondBox(config Config,
 }
 
 func (box *DiamondBox) Close() {
-	box.client.Close()
+	box.eth.Close()
 }

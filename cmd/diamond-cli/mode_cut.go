@@ -85,7 +85,7 @@ func (c *CutMode) PrintUsage() {
 
 func (c *CutMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
 	diamondCut := bind.NewBoundContract(c.box.config.Contracts["diamond"].Address,
-		c.box.contracts["cut_facet"].ABI, c.box.client, c.box.client, c.box.client)
+		c.box.contracts["cut_facet"].ABI, c.box.eth.client, c.box.eth.client, c.box.eth.client)
 
 	calldata, err := c.box.contracts["diamond_init"].ABI.Pack("init")
 	if err != nil {
@@ -135,7 +135,7 @@ func (c *CutMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
 			FunctionSelectors: functionSelectors,
 		})
 
-		tx, err := diamondCut.Transact(c.box.auth, "diamondCut", cut,
+		tx, err := diamondCut.Transact(c.box.eth.auth, "diamondCut", cut,
 			c.box.config.Contracts["diamond_init"].Address, calldata)
 		if err != nil {
 			return fmt.Errorf("failed to cut diamond: %v", err)
