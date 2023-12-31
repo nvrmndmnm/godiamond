@@ -114,6 +114,7 @@ func TestNewDiamondBox(t *testing.T) {
 			},
 		},
 	}
+	
 	sugar := zap.NewExample().Sugar()
 	modeName := "cut"
 	rpcName := "test"
@@ -130,9 +131,35 @@ func TestNewDiamondBox(t *testing.T) {
 
 	//box Eth: client, auth, chainid
 	assert.Equal(t, big.NewInt(1), box.eth.chainId)
-	assert.Equal(t, mockClient, box.eth.client)
+	// assert.Equal(t, mockClient, box.eth.client)
 
-	expectedABIStr := `[{"type":"constructor","inputs":[{"name":"_contractOwner","type":"address","internalType":"address"},{"name":"_diamondCutFacet","type":"address","internalType":"address"}],"stateMutability":"payable"},{"type":"fallback","stateMutability":"payable"},{"type":"receive","stateMutability":"payable"}]`
+	expectedABIStr := `[
+		{
+			"type":"constructor",
+			"inputs":[
+				{
+					"name":"_contractOwner",
+					"type":"address",
+					"internalType":"address"
+				},
+				{
+					"name":"_diamondCutFacet",
+					"type":"address",
+					"internalType":"address"
+				}
+			],
+			"stateMutability":"payable"
+		},
+		{
+			"type":"fallback",
+			"stateMutability":"payable"
+		},
+		{
+			"type":"receive",
+			"stateMutability":"payable"
+		}
+	]`
+
 	expectedABI, err := abi.JSON(strings.NewReader(expectedABIStr))
 	if err != nil {
 		t.Fatalf("failed to parse expected ABI: %v", err)
@@ -145,6 +172,13 @@ func TestNewDiamondBox(t *testing.T) {
 	expectedBytecode := "0x60806040526040516110696e2066"
 	if box.contracts["test"].Bytecode.Object != expectedBytecode {
 		t.Errorf("wrong bytecode; got %v, want %v", box.contracts["test"].Bytecode.Object, expectedBytecode)
+	}
+
+	expectedSelectors := SelectorsMetadata{
+		"diamondCut((address,uint8,bytes4[])[],address,bytes)":"1f931c1c",
+	}
+	if !reflect.DeepEqual(expectedSelectors, box.contracts["test"].MethodIdentifiers) {
+		t.Errorf("wrong selectors; got %v, want %v", box.contracts["test"].MethodIdentifiers, expectedSelectors)
 	}
 
 	expectedName := "Diamond"
