@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -77,7 +78,7 @@ func (l *LoupeMode) GetCommands() *Command {
 }
 
 func (l *LoupeMode) PrintUsage() {
-	PrintUsage(l.commands)
+	PrintUsage(os.Stdout, l.commands)
 }
 
 func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) error {

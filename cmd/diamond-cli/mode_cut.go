@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -80,7 +81,7 @@ func (c *CutMode) GetCommands() *Command {
 }
 
 func (c *CutMode) PrintUsage() {
-	PrintUsage(c.commands)
+	PrintUsage(os.Stdout, c.commands)
 }
 
 func (c *CutMode) Execute(cmd *Command, flags *pflag.FlagSet) error {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/spf13/pflag"
@@ -58,7 +59,7 @@ func (d *DeployMode) GetCommands() *Command {
 }
 
 func (d *DeployMode) PrintUsage() {
-	PrintUsage(d.commands)
+	PrintUsage(os.Stdout, d.commands)
 }
 
 func (d *DeployMode) Execute(cmd *Command, flags *pflag.FlagSet) error {

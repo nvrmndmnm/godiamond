@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/spf13/pflag"
 )
@@ -46,14 +47,14 @@ func (f *ModeFactory) CreateMode(name string) Mode {
 	return nil
 }
 
-func PrintUsage(c *Command) {
-	fmt.Printf("\nCommands:\n")
+func PrintUsage(w io.Writer, c *Command) {
+	fmt.Fprintf(w, "\nCommands:\n")
 
 	for _, cmd := range c.SubCommands {
-		fmt.Printf("    %-20s %s\n", cmd.Name, cmd.Description)
+		fmt.Fprintf(w, "    %-20s %s\n", cmd.Name, cmd.Description)
 	}
 
-	fmt.Printf("\nArguments:\n")
+	fmt.Fprintf(w, "\nArguments:\n")
 
 	printedSubCommands := make(map[string]bool)
 
@@ -61,7 +62,7 @@ func PrintUsage(c *Command) {
 		if len(cmd.SubCommands) > 0 {
 			for _, subCmd := range cmd.SubCommands {
 				if _, ok := printedSubCommands[subCmd.Name]; !ok {
-					fmt.Printf("    %-20s %s\n", "--"+subCmd.Name+"=", subCmd.Description)
+					fmt.Fprintf(w, "    %-20s %s\n", "--"+subCmd.Name+"=", subCmd.Description)
 					printedSubCommands[subCmd.Name] = true
 				}
 			}
