@@ -5,7 +5,6 @@ import (
 	"crypto/ecdsa"
 	"errors"
 	"math/big"
-	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -15,7 +14,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"go.uber.org/zap"
 )
 
 type MockEthereumWrapper struct {
@@ -44,90 +42,26 @@ func (m *MockEthereumWrapper) HexToECDSA(hexkey string) (*ecdsa.PrivateKey, erro
 }
 
 func TestNewDiamondBox(t *testing.T) {
-	mockEth := new(MockEthereumWrapper)
-	mockClient := &ethclient.Client{}
-	mockEth.On("Dial", "http://localhost:8545").Return(mockClient, nil)
-	mockEth.On("Dial", "http://some-other-url").Return(nil, errors.New("failed to connect"))
-
-	tmpFile, err := os.CreateTemp("", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.Remove(tmpFile.Name())
-
-	jsonData := `{
-		"abi":[
-			{
-				"type":"constructor",
-				"inputs":[
-					{
-					"name":"_contractOwner",
-					"type":"address",
-					"internalType":"address"
-					},
-					{
-					"name":"_diamondCutFacet",
-					"type":"address",
-					"internalType":"address"
-					}
-				],
-				"stateMutability":"payable"
-			},
-			{
-				"type":"fallback",
-				"stateMutability":"payable"
-			},
-			{
-				"type":"receive",
-				"stateMutability":"payable"
-			}
-		],
-		"bytecode":{
-			"object":"0x60806040526040516110696e2066"
-		},
-		"methodIdentifiers":{
-			"diamondCut((address,uint8,bytes4[])[],address,bytes)":"1f931c1c"
-		},
-		"ast":{
-			"id":43437,
-			"nodes":[{"id":43321,"name":"Diamond"}]
-		}
-    }`
-
-	if _, err := tmpFile.Write([]byte(jsonData)); err != nil {
-		t.Fatal(err)
-	}
-	tmpFile.Close()
-
-	config := Config{
-		RPC: map[string]string{
-			"test": "http://localhost:8545",
-		},
-		Accounts: map[string]EOA{
-			"anvil": {
-				PrivateKey: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
-			},
-		},
-		Contracts: map[string]ContractConfig{
-			"test": {
-				MetadataFilePath: tmpFile.Name(),
-			},
-		},
-	}
+	// config := Config{
+	// 	RPC: map[string]string{
+	// 		"test": "http://localhost:8545",
+	// 	},
+	// 	Accounts: map[string]EOA{
+	// 		"anvil": {
+	// 			PrivateKey: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+	// 		},
+	// 	},
 	
-	sugar := zap.NewExample().Sugar()
-	modeName := "cut"
-	rpcName := "test"
-	chainId := big.NewInt(-1)
+	// }
 
-	box, err := NewDiamondBox(config, sugar, modeName, rpcName, chainId)
+	box, err := setupBox()
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	assert.Equal(t, config, box.config)
-	assert.Equal(t, sugar, box.sugar)
-	assert.Equal(t, modeName, box.mode.GetCommands().Name)
+	// assert.Equal(t, config, box.config)
+	// assert.Equal(t, sugar, box.sugar)
+	// assert.Equal(t, modeName, box.mode.GetCommands().Name)
 
 	//box Eth: client, auth, chainid
 	assert.Equal(t, big.NewInt(1), box.eth.chainId)

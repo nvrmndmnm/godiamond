@@ -2,37 +2,9 @@ package main
 
 import (
 	"bytes"
-	"math/big"
 	"reflect"
 	"testing"
-
-	"go.uber.org/zap"
 )
-
-func setupBox() (*DiamondBox, error) {
-	config := Config{
-		RPC: map[string]string{
-			"test": "http://localhost:8545",
-		},
-		Accounts: map[string]EOA{
-			"anvil": {
-				PrivateKey: "0xcafebabecafebabecafebabecafebabecafebabecafebabecafebabecafebabe",
-			},
-		},
-	}
-
-	sugar := zap.NewExample().Sugar()
-	modeName := "cut"
-	rpcName := "test"
-	chainId := big.NewInt(-1)
-
-	box, err := NewDiamondBox(config, sugar, modeName, rpcName, chainId)
-	if err != nil {
-		return nil, err
-	}
-
-	return box, nil
-}
 
 func TestNewModeFactory(t *testing.T) {
 	box, err := setupBox()
