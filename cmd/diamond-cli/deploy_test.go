@@ -8,18 +8,30 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
-func TestDeployContract(t *testing.T) {
-	box, err := setupBox()
-	if err != nil {
-		t.Fatalf("Failed to create DiamondBox: %v", err)
-	}
+type BoxMock struct {
+	mock.Mock
+}
 
-	data, err := box.deployContract("test")
+func (b *BoxMock) deployContract(s string, a1, a2 common.Address) ([]byte, error) {
+	args := b.Called(s, a1, a2)
+	return args.Get(0).([]byte), args.Error(1)
+}
+
+func TestDeployContract(t *testing.T) {
+	box := new(BoxMock)
+
+	box.On("deployContract", "test", mock.AnythingOfType("common.Address"), mock.AnythingOfType("common.Address")).Return([]byte("data"), nil)
+
+	data, err := box.deployContract("test",
+		common.HexToAddress("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"),
+		common.HexToAddress("0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE"))
 
 	assert.Nil(t, err)
 	assert.NotNil(t, data)
+	box.AssertExpectations(t)
 }
 
 func TestWriteDeploymentDataToFile(t *testing.T) {

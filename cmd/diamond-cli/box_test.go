@@ -59,10 +59,6 @@ func TestNewDiamondBox(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	// assert.Equal(t, config, box.config)
-	// assert.Equal(t, sugar, box.sugar)
-	// assert.Equal(t, modeName, box.mode.GetCommands().Name)
-
 	//box Eth: client, auth, chainid
 	assert.Equal(t, big.NewInt(1), box.eth.chainId)
 	// assert.Equal(t, mockClient, box.eth.client)
