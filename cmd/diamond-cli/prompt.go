@@ -17,6 +17,7 @@ type Command struct {
 
 func (c *Command) completer(d prompt.Document) []prompt.Suggest {
 	args := strings.Split(d.Text, " ")
+	lastCommand := args[len(args)-1]
 
 	var commands []*Command
 	for _, cmd := range c.SubCommands {
@@ -46,10 +47,12 @@ outer:
 			}
 		}
 
-		suggestions = append(suggestions, prompt.Suggest{
-			Text:        name,
-			Description: cmd.Description,
-		})
+		if strings.HasPrefix(name, lastCommand) {
+			suggestions = append(suggestions, prompt.Suggest{
+				Text:        name,
+				Description: cmd.Description,
+			})
+		}
 	}
 
 	return suggestions
