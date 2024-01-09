@@ -16,38 +16,33 @@ type Command struct {
 }
 
 func (c *Command) completer(d prompt.Document) []prompt.Suggest {
-	args := strings.Split(d.Text, " ")
-	lastCommand := args[len(args)-1]
+	args := strings.Split(d.TextBeforeCursor(), " ")
+	lastArg := args[len(args)-1]
 
 	var commands []*Command
-	for _, cmd := range c.SubCommands {
-		if cmd.Name == args[0] {
-			commands = cmd.SubCommands
-			break
+	if len(args) > 1 {
+		for _, cmd := range c.SubCommands {
+			if cmd.Name == args[0] {
+				commands = cmd.SubCommands
+				break
+			}
 		}
-	}
-
-	if commands == nil {
+	} else {
 		commands = c.SubCommands
 	}
 
 	suggestions := make([]prompt.Suggest, 0, len(commands))
-
-outer:
 	for _, cmd := range commands {
 		name := cmd.Name
-
-		for i, arg := range args {
-			if strings.Contains(arg, cmd.Name) {
-				continue outer
-			}
-
-			if i > 0 {
-				name = "--" + cmd.Name + "="
-			}
+		if len(args) > 1 {
+			name = "--" + cmd.Name + "="
 		}
 
-		if strings.HasPrefix(name, lastCommand) {
+		if strings.Contains(d.TextBeforeCursor(), name) {
+			continue
+		}
+
+		if strings.HasPrefix(name, lastArg) {
 			suggestions = append(suggestions, prompt.Suggest{
 				Text:        name,
 				Description: cmd.Description,
