@@ -8,6 +8,8 @@ import (
 	"os"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.uber.org/zap"
 )
 
@@ -16,7 +18,7 @@ type ContractMetadata struct {
 	Bytecode struct {
 		Object string `json:"object"`
 	} `json:"bytecode"`
-	MethodIdentifiers SelectorsMetadata `json:"methodIdentifiers"`
+	MethodIdentifiers map[string]string `json:"methodIdentifiers"`
 	AST               struct {
 		Nodes []struct {
 			Name string `json:"name"`
@@ -105,4 +107,37 @@ func NewDiamondBox(config Config,
 
 func (box *DiamondBox) Close() {
 	box.eth.Close()
+}
+
+func (box *DiamondBox) getContractMetadataByAddress(address common.Address) (*ContractMetadata, error) {
+	for id, contract := range box.config.Contracts {
+		if contract.Address == address {
+			contractMetadata := box.contracts[id]
+
+			return &contractMetadata, nil
+		}
+	}
+
+	return nil, fmt.Errorf("contract address not found in config")
+}
+
+func getFunctionIdentifiersBySelectors(selectors [][4]byte, contractMetadata *ContractMetadata) map[string]string {
+	selectorsMetadata := make(map[string]string)
+
+	for _, selector := range selectors {
+		selectorString := hexutil.Encode(selector[:])
+		functionName := "Function name not specified"
+
+		if contractMetadata != nil {
+			for identifier, selectorValue := range contractMetadata.MethodIdentifiers {
+				if selectorString[2:] == selectorValue {
+					functionName = identifier
+					break
+				}
+			}
+		}
+		selectorsMetadata[selectorString] = functionName
+	}
+
+	return selectorsMetadata
 }

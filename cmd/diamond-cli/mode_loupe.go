@@ -7,7 +7,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/spf13/pflag"
 )
 
@@ -15,8 +14,6 @@ type LoupeMode struct {
 	commands *Command
 	box      *DiamondBox
 }
-
-type SelectorsMetadata map[string]string
 
 type LoupeFacet struct {
 	FacetAddress      common.Address
@@ -99,10 +96,8 @@ func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
 
 			fmt.Printf("facet address: %v\n", facet.FacetAddress)
 
-			selectorsMetadata, err := getSelectorsMetadata(facet.FunctionSelectors)
-			if err != nil {
-				return fmt.Errorf("failed to get selector metadata: %v", err)
-			}
+			contractMetadata, _ := l.box.getContractMetadataByAddress(common.Address(facet.FacetAddress))
+			selectorsMetadata := getFunctionIdentifiersBySelectors(facet.FunctionSelectors, contractMetadata)
 
 			for selector, functionName := range selectorsMetadata {
 				fmt.Printf("\t%s: %s \n", selector, functionName)
@@ -144,10 +139,8 @@ func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
 
 		facetSelectors := *abi.ConvertType(callResult[0], new([][4]byte)).(*[][4]byte)
 
-		selectorsMetadata, err := getSelectorsMetadata(facetSelectors)
-		if err != nil {
-			return fmt.Errorf("failed to get selector metadata: %v", err)
-		}
+		contractMetadata, _ := l.box.getContractMetadataByAddress(common.Address(facetAddress))
+		selectorsMetadata := getFunctionIdentifiersBySelectors(facetSelectors, contractMetadata)
 
 		for selector, functionName := range selectorsMetadata {
 			fmt.Printf("\t%s: %s \n", selector, functionName)
@@ -211,16 +204,4 @@ func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
 	}
 
 	return nil
-}
-
-func getSelectorsMetadata(selectors [][4]byte) (SelectorsMetadata, error) {
-	selectorsMetadata := make(SelectorsMetadata)
-	for _, selector := range selectors {
-		selectorString := hexutil.Encode(selector[:])
-		// TODO: Since there is no easy way to retrieve the function signature from the
-		// selector, a persistent metadata of every contract deployment is needed
-		functionName := "TBD"
-		selectorsMetadata[selectorString] = functionName
-	}
-	return selectorsMetadata, nil
 }

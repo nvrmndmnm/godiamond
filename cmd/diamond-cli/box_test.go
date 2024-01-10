@@ -51,7 +51,7 @@ func TestNewDiamondBox(t *testing.T) {
 	// 			PrivateKey: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
 	// 		},
 	// 	},
-	
+
 	// }
 
 	box, err := setupBox()
@@ -104,8 +104,8 @@ func TestNewDiamondBox(t *testing.T) {
 		t.Errorf("wrong bytecode; got %v, want %v", box.contracts["test"].Bytecode.Object, expectedBytecode)
 	}
 
-	expectedSelectors := SelectorsMetadata{
-		"diamondCut((address,uint8,bytes4[])[],address,bytes)":"1f931c1c",
+	expectedSelectors := map[string]string{
+		"diamondCut((address,uint8,bytes4[])[],address,bytes)": "1f931c1c",
 	}
 	if !reflect.DeepEqual(expectedSelectors, box.contracts["test"].MethodIdentifiers) {
 		t.Errorf("wrong selectors; got %v, want %v", box.contracts["test"].MethodIdentifiers, expectedSelectors)
