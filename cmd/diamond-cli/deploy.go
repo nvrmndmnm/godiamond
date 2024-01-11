@@ -67,7 +67,13 @@ func writeDeploymentDataToFile(data *DeploymentData) error {
 
 	date := time.Now().Format("2006-01-02")
 	time := time.Now().Format("15-04-05")
-	dirName := "out/deployments/" + date + "/"
+
+	wd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("failed to get working directory: %v", err)
+	}
+
+	dirName := wd + "/../../out/deployments/" + date + "/"
 
 	err = os.MkdirAll(dirName, 0755)
 	if err != nil {

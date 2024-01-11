@@ -3,6 +3,7 @@ package main
 import (
 	"math/big"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -48,7 +49,15 @@ func TestWriteDeploymentDataToFile(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	filePath := "out/deployments/" + time.Now().Format("2006-01-02") + "/" + data.Name + "-" + time.Now().Format("15-04-05") + ".json"
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Failed to get working directory: %v", err)
+	}
+
+	outDir := filepath.Join(wd, "../../out/deployments")
+	filePath := filepath.Join(outDir, time.Now().Format("2006-01-02"), data.Name+"-"+time.Now().Format("15-04-05")+".json")
+
+	t.Log(filePath)
 	_, err = os.Stat(filePath)
 	assert.False(t, os.IsNotExist(err))
 
