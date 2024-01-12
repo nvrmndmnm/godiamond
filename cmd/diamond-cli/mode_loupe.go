@@ -11,8 +11,9 @@ import (
 )
 
 type LoupeMode struct {
-	commands *Command
-	box      *DiamondBox
+	commands      *Command
+	box           *DiamondBox
+	loupeContract *bind.BoundContract
 }
 
 type LoupeFacet struct {
@@ -67,7 +68,10 @@ func NewLoupeMode(box *DiamondBox) Mode {
 
 	commands.SubCommands = append(commands.SubCommands, defaultCommands.SubCommands...)
 
-	return &LoupeMode{commands: commands, box: box}
+	loupeContract := bind.NewBoundContract(box.config.Contracts["diamond"].Address,
+		box.contracts["loupe_facet"].ABI, box.eth.client, box.eth.client, box.eth.client)
+
+	return &LoupeMode{commands: commands, box: box, loupeContract: loupeContract}
 }
 
 func (l *LoupeMode) GetCommands() *Command {
@@ -79,13 +83,10 @@ func (l *LoupeMode) PrintUsage() {
 }
 
 func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
-	loupe := bind.NewBoundContract(l.box.config.Contracts["diamond"].Address,
-		l.box.contracts["loupe_facet"].ABI, l.box.eth.client, l.box.eth.client, l.box.eth.client)
-
 	switch cmd.Name {
 	case "facets":
 		var callResult []any
-		err := loupe.Call(&bind.CallOpts{}, &callResult, "facets")
+		err := l.loupeContract.Call(&bind.CallOpts{}, &callResult, "facets")
 		if err != nil {
 			return fmt.Errorf("failed to get facets of a diamond: %v", err)
 		}
@@ -108,7 +109,7 @@ func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
 
 	case "addresses":
 		var callResult []any
-		err := loupe.Call(&bind.CallOpts{}, &callResult, "facetAddresses")
+		err := l.loupeContract.Call(&bind.CallOpts{}, &callResult, "facetAddresses")
 		if err != nil {
 			return fmt.Errorf("failed to get addresses of the facets: %v", err)
 		}
@@ -132,7 +133,7 @@ func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
 			return fmt.Errorf("invalid Ethereum address format: %v", err)
 		}
 
-		err = loupe.Call(&bind.CallOpts{}, &callResult, "facetFunctionSelectors", common.Address(facetAddress))
+		err = l.loupeContract.Call(&bind.CallOpts{}, &callResult, "facetFunctionSelectors", common.Address(facetAddress))
 		if err != nil {
 			return fmt.Errorf("failed to get facet selectors: %v", err)
 		}
@@ -165,7 +166,7 @@ func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
 
 		selector := [4]byte(functionSelector[0])
 
-		err = loupe.Call(&bind.CallOpts{}, &callResult, "facetAddress", selector)
+		err = l.loupeContract.Call(&bind.CallOpts{}, &callResult, "facetAddress", selector)
 		if err != nil {
 			return fmt.Errorf("failed to get facet address: %v", err)
 		}
@@ -193,7 +194,7 @@ func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
 
 		id := [4]byte(interfaceId[0])
 
-		err = loupe.Call(&bind.CallOpts{}, &callResult, "supportsInterface", id)
+		err = l.loupeContract.Call(&bind.CallOpts{}, &callResult, "supportsInterface", id)
 		if err != nil {
 			return fmt.Errorf("failed to check interface support: %v", err)
 		}
