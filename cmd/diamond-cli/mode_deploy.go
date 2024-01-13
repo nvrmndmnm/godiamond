@@ -18,16 +18,6 @@ func NewDeployMode(box *DiamondBox) Mode {
 		Name: "deploy",
 		SubCommands: []*Command{
 			{
-				Name:        "diamond",
-				Description: "Deploy a new diamond",
-				SubCommands: []*Command{
-					{
-						Name:        "owner",
-						Description: "Ethereum address of the owner",
-					},
-				},
-			},
-			{
 				Name:        "facet",
 				Description: "Deploy a facet to use in an existing diamond",
 				SubCommands: []*Command{
@@ -64,13 +54,6 @@ func (d *DeployMode) PrintUsage() {
 
 func (d *DeployMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
 	switch cmd.Name {
-	case "diamond":
-		owner, err := flags.GetString("owner")
-		if err != nil {
-			return fmt.Errorf("invalid owner flag: %v", err)
-		}
-		fmt.Println(owner)
-
 	case "facet":
 		metadataFilePath, err := flags.GetString("metadata")
 		if err != nil {
