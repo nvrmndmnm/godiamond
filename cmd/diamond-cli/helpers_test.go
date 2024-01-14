@@ -21,7 +21,7 @@ func setupBox() (*DiamondBox, error) {
 	}
 	defer os.Remove(tmpFile.Name())
 
-	jsonData := `{
+	testJsonData := `{
 		"abi":[
 			{
 				"type":"constructor",
@@ -46,7 +46,54 @@ func setupBox() (*DiamondBox, error) {
 			{
 				"type":"receive",
 				"stateMutability":"payable"
-			}
+			},
+			{
+				"type": "function",
+				"name": "init",
+				"inputs": [],
+				"outputs": [],
+				"stateMutability": "nonpayable"
+			},
+			{
+				"type": "function",
+				"name": "diamondCut",
+				"inputs": [
+				  {
+					"name": "_diamondCut",
+					"type": "tuple[]",
+					"internalType": "struct IDiamondCut.FacetCut[]",
+					"components": [
+					  {
+						"name": "facetAddress",
+						"type": "address",
+						"internalType": "address"
+					  },
+					  {
+						"name": "action",
+						"type": "uint8",
+						"internalType": "enum IDiamondCut.FacetCutAction"
+					  },
+					  {
+						"name": "functionSelectors",
+						"type": "bytes4[]",
+						"internalType": "bytes4[]"
+					  }
+					]
+				  },
+				  {
+					"name": "_init",
+					"type": "address",
+					"internalType": "address"
+				  },
+				  {
+					"name": "_calldata",
+					"type": "bytes",
+					"internalType": "bytes"
+				  }
+				],
+				"outputs": [],
+				"stateMutability": "nonpayable"
+			  }
 		],
 		"bytecode":{
 			"object":"0x60806040526040516110696e2066"
@@ -60,7 +107,7 @@ func setupBox() (*DiamondBox, error) {
 		}
     }`
 
-	if _, err := tmpFile.Write([]byte(jsonData)); err != nil {
+	if _, err := tmpFile.Write([]byte(testJsonData)); err != nil {
 		return nil, err
 	}
 	tmpFile.Close()
@@ -76,6 +123,18 @@ func setupBox() (*DiamondBox, error) {
 		},
 		Contracts: map[string]ContractConfig{
 			"test": {
+				MetadataFilePath: tmpFile.Name(),
+			},
+			"diamond": {
+				MetadataFilePath: tmpFile.Name(),
+			},
+			"diamond_init": {
+				MetadataFilePath: tmpFile.Name(),
+			},
+			"cut_facet": {
+				MetadataFilePath: tmpFile.Name(),
+			},
+			"loupe_facet": {
 				MetadataFilePath: tmpFile.Name(),
 			},
 		},
