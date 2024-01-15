@@ -51,10 +51,12 @@ func TestCutMode_Execute(t *testing.T) {
 		t.Fatalf("Expected type CutMode, got %T", mode)
 	}
 
+	cutMode.cutContract = &MockBoundContract{}
+
 	cmd := &Command{Name: "add"}
 	flags := pflag.NewFlagSet("test", pflag.ContinueOnError)
-	flags.String("address", "0x0000000000000000000000000000000000000000", "")
-	flags.String("selectors", "0x00000000", "")
+	flags.String("address", "0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE", "")
+	flags.String("selectors", "0xdeadbeef", "")
 
 	err = cutMode.Execute(cmd, flags)
 

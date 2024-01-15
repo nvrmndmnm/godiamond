@@ -5,9 +5,19 @@ import (
 	"math/big"
 	"os"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/zap"
 )
+
+type MockBoundContract struct{}
+
+func (m *MockBoundContract) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	tx := types.NewTransaction(0, common.Address{}, big.NewInt(0), 0, big.NewInt(0), nil)
+	return tx, nil
+}
 
 func setupBox() (*DiamondBox, error) {
 	mockEth := new(MockEthereumWrapper)

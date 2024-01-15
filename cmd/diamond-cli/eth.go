@@ -6,6 +6,7 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
@@ -16,6 +17,10 @@ type EthereumClient interface {
 	NetworkID(ctx context.Context) (*big.Int, error)
 	SuggestGasPrice(ctx context.Context) (*big.Int, error)
 	HexToECDSA(hexkey string) (*ecdsa.PrivateKey, error)
+}
+
+type BoundContract interface {
+	Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error)
 }
 
 type EthereumWrapper struct {

@@ -12,7 +12,7 @@ import (
 type CutMode struct {
 	commands    *Command
 	box         *DiamondBox
-	cutContract *bind.BoundContract
+	cutContract BoundContract
 }
 
 type FacetCut struct {
