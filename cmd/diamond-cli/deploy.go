@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"path/filepath"
 	"sort"
 	"time"
 
@@ -73,16 +74,17 @@ func writeDeploymentDataToFile(data *DeploymentData) error {
 		return fmt.Errorf("failed to get working directory: %v", err)
 	}
 
-	dirName := wd + "/../../out/deployments/" + date + "/"
+	path := filepath.Join(wd, "out/deployments", date)
 
-	err = os.MkdirAll(dirName, 0755)
+	err = os.MkdirAll(path, 0755)
 	if err != nil {
 		return fmt.Errorf("failed to create a directory: %v", err)
 	}
 
-	fileName := dirName + data.Name + "-" + time + ".json"
+	fileName := data.Name + "-" + time + ".json"
+	path = filepath.Join(path, fileName)
 
-	err = os.WriteFile(fileName, jsonData, 0644)
+	err = os.WriteFile(path, jsonData, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write deployment data: %v", err)
 	}
