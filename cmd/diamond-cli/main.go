@@ -6,9 +6,6 @@ import (
 	"math/big"
 	"os"
 
-	"github.com/knadh/koanf"
-	"github.com/knadh/koanf/parsers/yaml"
-	"github.com/knadh/koanf/providers/file"
 	"github.com/spf13/pflag"
 	"go.uber.org/zap"
 )
@@ -27,7 +24,7 @@ Usage:
     diamond-cli deploy [options]
     diamond-cli cut [options]
     diamond-cli loupe [options]
-	diamond-cli help
+    diamond-cli help
 
 Options:
     --rpc <name>          string    RPC identifier (required)
@@ -65,19 +62,12 @@ func main() {
 	sugar := logger.Sugar()
 	defer logger.Sync()
 
-	k := koanf.New(".")
-	if err := k.Load(file.Provider(args.ValueConfig), yaml.Parser()); err != nil {
+	config, err := loadConfig(args.ValueConfig)
+	if err != nil {
 		sugar.Fatalf("failed to load config: %v", err)
 	}
 
-	var config Config
-
-	if err := k.Unmarshal("", &config); err != nil {
-		sugar.Fatalf("failed to unmarshal config: %v", err)
-	}
-
-	err = config.validateStandardContracts()
-	if err != nil {
+	if err := config.validateStandardContracts(); err != nil {
 		sugar.Fatalf("failed to validate config: %v", err)
 	}
 
