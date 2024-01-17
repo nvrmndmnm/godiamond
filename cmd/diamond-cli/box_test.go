@@ -11,18 +11,6 @@ import (
 )
 
 func TestNewDiamondBox(t *testing.T) {
-	// config := Config{
-	// 	RPC: map[string]string{
-	// 		"test": "http://localhost:8545",
-	// 	},
-	// 	Accounts: map[string]EOA{
-	// 		"anvil": {
-	// 			PrivateKey: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
-	// 		},
-	// 	},
-
-	// }
-
 	box, err := setupBox()
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -74,13 +62,13 @@ func TestNewDiamondBox(t *testing.T) {
 	}
 
 	expectedSelectors := map[string]string{
-		"diamondCut((address,uint8,bytes4[])[],address,bytes)": "1f931c1c",
+		"test((address,uint8)address,bytes)": "bc645d96",
 	}
 	if !reflect.DeepEqual(expectedSelectors, box.contracts["test"].MethodIdentifiers) {
 		t.Errorf("wrong selectors; got %v, want %v", box.contracts["test"].MethodIdentifiers, expectedSelectors)
 	}
 
-	expectedName := "Diamond"
+	expectedName := "TestContract"
 	if box.contracts["test"].AST.Nodes[0].Name != expectedName {
 		t.Errorf("wrong selectors; got %v, want %v", box.contracts["test"].AST.Nodes[0].Name, expectedName)
 	}

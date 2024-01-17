@@ -1,0 +1,43 @@
+{
+    "abi": [
+        {
+            "type": "constructor",
+            "inputs": [
+                {
+                    "name": "_contractOwner",
+                    "type": "address",
+                    "internalType": "address"
+                },
+                {
+                    "name": "_diamondCutFacet",
+                    "type": "address",
+                    "internalType": "address"
+                }
+            ],
+            "stateMutability": "payable"
+        },
+        {
+            "type": "fallback",
+            "stateMutability": "payable"
+        },
+        {
+            "type": "receive",
+            "stateMutability": "payable"
+        }
+    ],
+    "bytecode": {
+        "object": "0x60806040526040516110696e2066"
+    },
+    "methodIdentifiers": {
+        "test((address,uint8)address,bytes)": "bc645d96"
+    },
+    "ast": {
+        "id": 1337,
+        "nodes": [
+            {
+                "id": 69420,
+                "name": "TestContract"
+            }
+        ]
+    }
+}

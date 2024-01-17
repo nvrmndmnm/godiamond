@@ -1,0 +1,26 @@
+{
+    "abi": [
+        {
+            "type": "function",
+            "name": "init",
+            "inputs": [],
+            "outputs": [],
+            "stateMutability": "nonpayable"
+        }
+    ],
+    "bytecode": {
+        "object": "0x60806040526040516110696e2066"
+    },
+    "methodIdentifiers": {
+        "init()": "e1c7392a"
+    },
+    "ast": {
+        "id": 1337,
+        "nodes": [
+            {
+                "id": 69420,
+                "name": "DiamondInit"
+            }
+        ]
+    }
+}

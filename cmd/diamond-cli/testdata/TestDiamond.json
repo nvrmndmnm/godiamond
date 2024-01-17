@@ -1,0 +1,118 @@
+{
+    "abi": [
+        {
+            "type": "constructor",
+            "inputs": [
+                {
+                    "name": "_contractOwner",
+                    "type": "address",
+                    "internalType": "address"
+                },
+                {
+                    "name": "_diamondCutFacet",
+                    "type": "address",
+                    "internalType": "address"
+                }
+            ],
+            "stateMutability": "payable"
+        },
+        {
+            "type": "fallback",
+            "stateMutability": "payable"
+        },
+        {
+            "type": "receive",
+            "stateMutability": "payable"
+        },
+        {
+            "type": "event",
+            "name": "DiamondCut",
+            "inputs": [
+                {
+                    "name": "_diamondCut",
+                    "type": "tuple[]",
+                    "indexed": false,
+                    "internalType": "struct IDiamondCut.FacetCut[]",
+                    "components": [
+                        {
+                            "name": "facetAddress",
+                            "type": "address",
+                            "internalType": "address"
+                        },
+                        {
+                            "name": "action",
+                            "type": "uint8",
+                            "internalType": "enum IDiamondCut.FacetCutAction"
+                        },
+                        {
+                            "name": "functionSelectors",
+                            "type": "bytes4[]",
+                            "internalType": "bytes4[]"
+                        }
+                    ]
+                },
+                {
+                    "name": "_init",
+                    "type": "address",
+                    "indexed": false,
+                    "internalType": "address"
+                },
+                {
+                    "name": "_calldata",
+                    "type": "bytes",
+                    "indexed": false,
+                    "internalType": "bytes"
+                }
+            ],
+            "anonymous": false
+        },
+        {
+            "type": "event",
+            "name": "OwnershipTransferred",
+            "inputs": [
+                {
+                    "name": "previousOwner",
+                    "type": "address",
+                    "indexed": true,
+                    "internalType": "address"
+                },
+                {
+                    "name": "newOwner",
+                    "type": "address",
+                    "indexed": true,
+                    "internalType": "address"
+                }
+            ],
+            "anonymous": false
+        },
+        {
+            "type": "error",
+            "name": "InitializationFunctionReverted",
+            "inputs": [
+                {
+                    "name": "_initializationContractAddress",
+                    "type": "address",
+                    "internalType": "address"
+                },
+                {
+                    "name": "_calldata",
+                    "type": "bytes",
+                    "internalType": "bytes"
+                }
+            ]
+        }
+    ],
+    "bytecode": {
+        "object": "0x60806040526040516110696e2066"
+    },
+    "methodIdentifiers": {},
+    "ast": {
+        "id": 1337,
+        "nodes": [
+            {
+                "id": 69420,
+                "name": "Diamond"
+            }
+        ]
+    }
+}

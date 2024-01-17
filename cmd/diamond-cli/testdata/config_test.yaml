@@ -1,0 +1,22 @@
+eoa:
+  anvil:
+    private_key: "0xcafebabecafebabecafebabecafebabecafebabecafebabecafebabecafebabe"
+    address:     "0xcafebabecafebabecafebabecafebabecafebabe"
+rpc:
+  "test": "http://localhost:8545"
+contracts:
+  diamond: 
+    address: "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+    metadata: "./testdata/TestDiamond.json"
+  diamond_init:
+    address: "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+    metadata: "./testdata/TestDiamondInit.json"
+  cut_facet:
+    address: "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+    metadata: "./testdata/TestDiamondCutFacet.json"
+  loupe_facet:
+    address: "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+    metadata: "./testdata/TestDiamondLoupeFacet.json"
+  test:
+    address: "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+    metadata: "./testdata/TestContract.json"

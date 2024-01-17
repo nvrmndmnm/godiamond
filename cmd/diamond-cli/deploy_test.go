@@ -37,8 +37,8 @@ func TestDeployContract(t *testing.T) {
 
 func TestWriteDeploymentDataToFile(t *testing.T) {
 	data := &DeploymentData{
-		Address:   common.HexToAddress("0x123"),
-		Deployer:  common.HexToAddress("0x123"),
+		Address:   common.HexToAddress("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"),
+		Deployer:  common.HexToAddress("0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE"),
 		Name:      "test",
 		Selectors: [][]string{{"test", "test"}},
 		ChainID:   *big.NewInt(1),
@@ -46,24 +46,18 @@ func TestWriteDeploymentDataToFile(t *testing.T) {
 	}
 
 	err := writeDeploymentDataToFile(data)
-
 	assert.Nil(t, err)
 
-	wd, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("Failed to get working directory: %v", err)
-	}
+	path := filepath.Join("./out/deployments", time.Now().Format("2006-01-02"))
+	fileName := data.Name + "-" + time.Now().Format("15-04-05") + ".json"
+	path = filepath.Join(path, fileName)
 
-	outDir := filepath.Join(wd, "../../out/deployments")
-	filePath := filepath.Join(outDir, time.Now().Format("2006-01-02"), data.Name+"-"+time.Now().Format("15-04-05")+".json")
-
-	t.Log(filePath)
-	_, err = os.Stat(filePath)
+	_, err = os.Stat(path)
 	assert.False(t, os.IsNotExist(err))
 
-	err = os.Remove(filePath)
+	err = os.RemoveAll("out")
 	assert.Nil(t, err)
 
-	_, err = os.Stat(filePath)
+	_, err = os.Stat(path)
 	assert.True(t, os.IsNotExist(err))
 }
