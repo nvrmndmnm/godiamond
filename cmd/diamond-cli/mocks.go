@@ -40,9 +40,17 @@ func (m *MockEthereumWrapper) HexToECDSA(hexkey string) (*ecdsa.PrivateKey, erro
 }
 
 // MockBoundContract is a mock object that implements the BoundContract interface.
-type MockBoundContract struct{}
+type MockBoundContract struct {
+	mock.Mock
+}
 
 func (m *MockBoundContract) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	tx := types.NewTransaction(0, common.Address{}, big.NewInt(0), 0, big.NewInt(0), nil)
-	return tx, nil
+	var args mock.Arguments
+	switch {
+	case method == "diamondCut":
+		args = m.Called(opts, method, (params[0]).([]FacetCut), (params[1]).(common.Address), (params[2]).([]byte))
+	default:
+		args = m.Called(opts, method, params)
+	}
+	return args.Get(0).(*types.Transaction), args.Error(1)
 }

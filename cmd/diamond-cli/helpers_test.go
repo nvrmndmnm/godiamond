@@ -4,7 +4,10 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/stretchr/testify/mock"
 	"go.uber.org/zap"
 )
 
@@ -30,4 +33,35 @@ func setupBox() (*DiamondBox, error) {
 	}
 
 	return box, nil
+}
+
+func setupMockCutContract() *MockBoundContract {
+	mockContract := new(MockBoundContract)
+
+	var functionSelectors SelectorFlag
+	err := functionSelectors.Set("0xdeadbeef")
+	if err != nil {
+		return nil
+	}
+
+	expectedCut := []FacetCut{{
+		FacetAddress:      common.HexToAddress("0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE"),
+		Action:            Add,
+		FunctionSelectors: functionSelectors,
+	}}
+	expectedAddress := common.HexToAddress("0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef")
+	expectedCalldata := []byte{225, 199, 57, 42}
+
+	tx := types.NewTransaction(0, common.Address{}, big.NewInt(0), 0, big.NewInt(0), nil)
+
+	mockContract.On(
+		"Transact",
+		mock.Anything,
+		"diamondCut",
+		expectedCut,
+		expectedAddress,
+		expectedCalldata).
+		Return(tx, nil)
+
+	return mockContract
 }
