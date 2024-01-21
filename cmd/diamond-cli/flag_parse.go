@@ -27,8 +27,10 @@ func (b *SelectorFlag) Set(value string) error {
 	values := strings.Split(trimmedValue, ",")
 
 	for _, v := range values {
+		v = strings.TrimSpace(v)
 		v = strings.TrimPrefix(v, "0x")
-		decoded, err := hex.DecodeString(strings.TrimSpace(v))
+		
+		decoded, err := hex.DecodeString(v)
 		if err != nil {
 			return fmt.Errorf("failed to decode hex: %v", err)
 		}
