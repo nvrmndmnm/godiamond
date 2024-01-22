@@ -49,9 +49,14 @@ func setupMockCutContract() *MockBoundContract {
 		Action:            Add,
 		FunctionSelectors: functionSelectors,
 	}}
+
+	expectedErrCut := []FacetCut{{
+		Action:            Remove,
+		FunctionSelectors: functionSelectors,
+	}}
+
 	expectedAddress := common.HexToAddress("0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef")
 	expectedCalldata := []byte{225, 199, 57, 42}
-
 	tx := types.NewTransaction(0, common.Address{}, big.NewInt(0), 0, big.NewInt(0), nil)
 
 	mockContract.On(
@@ -62,6 +67,15 @@ func setupMockCutContract() *MockBoundContract {
 		expectedAddress,
 		expectedCalldata).
 		Return(tx, nil)
+
+	mockContract.On(
+		"Transact",
+		mock.Anything,
+		"diamondCut",
+		expectedErrCut,
+		expectedAddress,
+		expectedCalldata).
+		Return(tx, errors.New("failed test"))
 
 	return mockContract
 }
