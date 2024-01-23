@@ -83,74 +83,39 @@ func (l *LoupeMode) PrintUsage() {
 }
 
 func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
+	var output string
+	var err error
+
 	switch cmd.Name {
 	case "facets":
-		var callResult []any
-		err := l.loupeContract.Call(&bind.CallOpts{}, &callResult, "facets")
+		output, err = l.getFacetsOutput()
 		if err != nil {
-			return fmt.Errorf("failed to get facets of a diamond: %v", err)
-		}
-
-		facets := *abi.ConvertType(callResult[0], new([]LoupeFacet)).(*[]LoupeFacet)
-
-		for _, facet := range facets {
-
-			fmt.Printf("facet address: %v\n", facet.FacetAddress)
-
-			contractMetadata, _ := l.box.getContractMetadataByAddress(common.Address(facet.FacetAddress))
-			selectorsMetadata := getFunctionIdentifiersBySelectors(facet.FunctionSelectors, contractMetadata)
-
-			for selector, functionName := range selectorsMetadata {
-				fmt.Printf("\t%s: %s \n", selector, functionName)
-			}
-
-			fmt.Println()
+			return err
 		}
 
 	case "addresses":
-		var callResult []any
-		err := l.loupeContract.Call(&bind.CallOpts{}, &callResult, "facetAddresses")
+		output, err = l.getFacetAddressesOutput()
 		if err != nil {
-			return fmt.Errorf("failed to get addresses of the facets: %v", err)
-		}
-
-		facetAddreses := *abi.ConvertType(callResult[0], new([]common.Address)).(*[]common.Address)
-
-		for _, address := range facetAddreses {
-			fmt.Println(address.String())
+			return err
 		}
 
 	case "facet-selectors":
 		var facetAddress AddressFlag
-		var callResult []any
-
 		addressString, err := flags.GetString("address")
 		if err != nil {
 			return fmt.Errorf("invalid address flag: %v", err)
 		}
-
 		if err := facetAddress.Set(addressString); err != nil {
 			return fmt.Errorf("invalid Ethereum address format: %v", err)
 		}
 
-		err = l.loupeContract.Call(&bind.CallOpts{}, &callResult, "facetFunctionSelectors", common.Address(facetAddress))
+		output, err = l.getFacetSelectorsOutput(facetAddress)
 		if err != nil {
-			return fmt.Errorf("failed to get facet selectors: %v", err)
-		}
-
-		facetSelectors := *abi.ConvertType(callResult[0], new([][4]byte)).(*[][4]byte)
-
-		contractMetadata, _ := l.box.getContractMetadataByAddress(common.Address(facetAddress))
-		selectorsMetadata := getFunctionIdentifiersBySelectors(facetSelectors, contractMetadata)
-
-		for selector, functionName := range selectorsMetadata {
-			fmt.Printf("\t%s: %s \n", selector, functionName)
+			return err
 		}
 
 	case "facet-address":
 		var functionSelector SelectorFlag
-		var callResult []any
-
 		selectorString, err := flags.GetString("selector")
 		if err != nil {
 			return fmt.Errorf("invalid selector flag: %v", err)
@@ -160,25 +125,13 @@ func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
 			return fmt.Errorf("invalid selector format: %v", err)
 		}
 
-		if len(functionSelector) > 1 {
-			return fmt.Errorf("a single selector is required")
-		}
-
-		selector := [4]byte(functionSelector[0])
-
-		err = l.loupeContract.Call(&bind.CallOpts{}, &callResult, "facetAddress", selector)
+		output, err = l.getFacetAddressOutput(functionSelector)
 		if err != nil {
-			return fmt.Errorf("failed to get facet address: %v", err)
+			return err
 		}
-
-		facetAddress := *abi.ConvertType(callResult[0], new(common.Address)).(*common.Address)
-
-		fmt.Printf("Facet address: %s\n", facetAddress.String())
 
 	case "supports-interface":
 		var interfaceId SelectorFlag
-		var callResult []any
-
 		interfaceIdString, err := flags.GetString("id")
 		if err != nil {
 			return fmt.Errorf("invalid id flag: %v", err)
@@ -188,21 +141,116 @@ func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
 			return fmt.Errorf("invalid id format: %v", err)
 		}
 
-		if len(interfaceId) > 1 {
-			return fmt.Errorf("a single identifier is required")
-		}
-
-		id := [4]byte(interfaceId[0])
-
-		err = l.loupeContract.Call(&bind.CallOpts{}, &callResult, "supportsInterface", id)
+		output, err = l.getSupportsInterfaceOutput(interfaceId)
 		if err != nil {
-			return fmt.Errorf("failed to check interface support: %v", err)
+			return err
 		}
-
-		status := *abi.ConvertType(callResult[0], new(bool)).(*bool)
-
-		fmt.Printf("ERC-165 status: %v\n", status)
 	}
 
+	fmt.Println(output)
+
 	return nil
+}
+
+func (l *LoupeMode) getFacetsOutput() (string, error) {
+	var output string
+	var callResult []any
+
+	err := l.loupeContract.Call(&bind.CallOpts{}, &callResult, "facets")
+	if err != nil {
+		return "", fmt.Errorf("failed to get facets of a diamond: %v", err)
+	}
+
+	facets := *abi.ConvertType(callResult[0], new([]LoupeFacet)).(*[]LoupeFacet)
+
+	for _, facet := range facets {
+		contractMetadata, _ := l.box.getContractMetadataByAddress(common.Address(facet.FacetAddress))
+		selectorsMetadata := getFunctionIdentifiersBySelectors(facet.FunctionSelectors, contractMetadata)
+
+		output += fmt.Sprintf("facet address: %v\n", facet.FacetAddress)
+
+		for selector, functionName := range selectorsMetadata {
+			output += fmt.Sprintf("\t%s: %s \n", selector, functionName)
+		}
+	}
+	return output, nil
+}
+
+func (l *LoupeMode) getFacetAddressesOutput() (string, error) {
+	var output string
+	var callResult []any
+
+	err := l.loupeContract.Call(&bind.CallOpts{}, &callResult, "facetAddresses")
+	if err != nil {
+		return "", fmt.Errorf("failed to get addresses of the facets: %v", err)
+	}
+
+	facetAddresses := *abi.ConvertType(callResult[0], new([]common.Address)).(*[]common.Address)
+
+	for _, address := range facetAddresses {
+		output += fmt.Sprintf("%v\n", address)
+	}
+	return output, nil
+}
+
+func (l *LoupeMode) getFacetSelectorsOutput(facetAddress AddressFlag) (string, error) {
+	var output string
+	var callResult []any
+
+	err := l.loupeContract.Call(&bind.CallOpts{}, &callResult, "facetFunctionSelectors", common.Address(facetAddress))
+	if err != nil {
+		return "", fmt.Errorf("failed to get facet selectors: %v", err)
+	}
+
+	facetSelectors := *abi.ConvertType(callResult[0], new([][4]byte)).(*[][4]byte)
+
+	contractMetadata, _ := l.box.getContractMetadataByAddress(common.Address(facetAddress))
+	selectorsMetadata := getFunctionIdentifiersBySelectors(facetSelectors, contractMetadata)
+
+	for selector, functionName := range selectorsMetadata {
+		output += fmt.Sprintf("\t%s: %s \n", selector, functionName)
+	}
+	return output, nil
+}
+
+func (l *LoupeMode) getFacetAddressOutput(functionSelector SelectorFlag) (string, error) {
+	var output string
+	var callResult []any
+
+	if len(functionSelector) > 1 {
+		return "", fmt.Errorf("a single selector is required")
+	}
+
+	selector := [4]byte(functionSelector[0])
+
+	err := l.loupeContract.Call(&bind.CallOpts{}, &callResult, "facetAddress", selector)
+	if err != nil {
+		return "", fmt.Errorf("failed to get facet address: %v", err)
+	}
+
+	facetAddress := *abi.ConvertType(callResult[0], new(common.Address)).(*common.Address)
+
+	output = fmt.Sprintf("%s\n", facetAddress.String())
+	return output, nil
+}
+
+func (l *LoupeMode) getSupportsInterfaceOutput(interfaceId SelectorFlag) (string, error) {
+	var output string
+	var callResult []any
+
+	if len(interfaceId) > 1 {
+		return "", fmt.Errorf("a single identifier is required")
+	}
+
+	id := [4]byte(interfaceId[0])
+
+	err := l.loupeContract.Call(&bind.CallOpts{}, &callResult, "supportsInterface", id)
+	if err != nil {
+		return "", fmt.Errorf("failed to check interface support: %v", err)
+	}
+
+	status := *abi.ConvertType(callResult[0], new(bool)).(*bool)
+
+	output = fmt.Sprintf("ERC-165 status: %v\n", status)
+	return output, nil
 }
