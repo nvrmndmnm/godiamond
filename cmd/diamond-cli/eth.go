@@ -12,6 +12,7 @@ import (
 )
 
 type BoundContract interface {
+	Call(opts *bind.CallOpts, results *[]interface{}, method string, params ...interface{}) error
 	Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error)
 }
 

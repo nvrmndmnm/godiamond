@@ -13,7 +13,7 @@ import (
 type LoupeMode struct {
 	commands      *Command
 	box           *DiamondBox
-	loupeContract *bind.BoundContract
+	loupeContract BoundContract
 }
 
 type LoupeFacet struct {
