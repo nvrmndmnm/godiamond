@@ -58,8 +58,8 @@ func TestCutMode_Execute(t *testing.T) {
 	cutMode.cutContract = mockContract
 	cmd := &Command{Name: "add"}
 	flags := pflag.NewFlagSet("test", pflag.ContinueOnError)
-	flags.String("address", "0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE", "")
-	flags.String("selectors", "0xdeadbeef", "")
+	flags.String("address", "0xFEEDBABEFEEDBABEFEEDBABEFEEDBABEFEEDBABE", "")
+	flags.String("selectors", "0xbc645d96", "")
 
 	var cut []FacetCut
 	var facetAddress AddressFlag
@@ -147,8 +147,8 @@ func TestCutMode_Execute_FailedToCutDiamond(t *testing.T) {
 	cutMode.cutContract = mockContract
 	cmd := &Command{Name: "remove"}
 	flags := pflag.NewFlagSet("test", pflag.ContinueOnError)
-	flags.String("address", "0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE", "")
-	flags.String("selectors", "0xdeadbeef", "")
+	flags.String("address", "0xFEEDBABEFEEDBABEFEEDBABEFEEDBABEFEEDBABE", "")
+	flags.String("selectors", "0xbc645d96", "")
 
 	var cut []FacetCut
 	var facetAddress AddressFlag
