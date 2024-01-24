@@ -63,8 +63,8 @@ func TestLoupeMode_Execute(t *testing.T) {
 	err = loupeMode.Execute(cmd, flags, buf)
 	assert.NoError(t, err)
 	mockContract.AssertCalled(t, "Call", &bind.CallOpts{}, mock.Anything, cmd.Name)
-	
+
 	expectedOutput := "facet address: 0xFEeDBAbefEedbaBefeEDbAbEfEeDBABeFEEDbaBe\n\t0xbc645d96: test((address,uint8)address,bytes)\n\n"
-	assert.Equal(t, buf.String(), expectedOutput, "The output does not contain the expected text")
+	assert.Equal(t, buf.String(), expectedOutput, "The output does not match the expected text")
 
 }
