@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -39,13 +40,13 @@ func setupMockCutContract() *MockBoundContract {
 	mockContract := new(MockBoundContract)
 
 	var functionSelectors SelectorFlag
-	err := functionSelectors.Set("0xdeadbeef")
+	err := functionSelectors.Set("0xbc645d96")
 	if err != nil {
 		return nil
 	}
 
 	expectedCut := []FacetCut{{
-		FacetAddress:      common.HexToAddress("0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE"),
+		FacetAddress:      common.HexToAddress("0xFEEDBABEFEEDBABEFEEDBABEFEEDBABEFEEDBABE"),
 		Action:            Add,
 		FunctionSelectors: functionSelectors,
 	}}
@@ -55,7 +56,7 @@ func setupMockCutContract() *MockBoundContract {
 		FunctionSelectors: functionSelectors,
 	}}
 
-	expectedAddress := common.HexToAddress("0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef")
+	diamondInitAddress := common.HexToAddress("0xB055BABEB055BABEB055BABEB055BABEB055BABE")
 	expectedCalldata := []byte{225, 199, 57, 42}
 	tx := types.NewTransaction(0, common.Address{}, big.NewInt(0), 0, big.NewInt(0), nil)
 
@@ -64,7 +65,7 @@ func setupMockCutContract() *MockBoundContract {
 		mock.Anything,
 		"diamondCut",
 		expectedCut,
-		expectedAddress,
+		diamondInitAddress,
 		expectedCalldata).
 		Return(tx, nil)
 
@@ -73,9 +74,25 @@ func setupMockCutContract() *MockBoundContract {
 		mock.Anything,
 		"diamondCut",
 		expectedErrCut,
-		expectedAddress,
+		diamondInitAddress,
 		expectedCalldata).
 		Return(tx, errors.New("failed test"))
+
+	return mockContract
+}
+
+func setupMockLoupeContract() *MockBoundContract {
+	mockContract := new(MockBoundContract)
+	mockContract.On("Call", &bind.CallOpts{}, mock.Anything, "facets").Run(func(args mock.Arguments) {
+		// args[1] is the additional argument to Call, which stores the call results
+		results := args[1].(*[]interface{})
+		*results = append(*results, []LoupeFacet{
+			{
+				FacetAddress:      common.HexToAddress("0xFEEDBABEFEEDBABEFEEDBABEFEEDBABEFEEDBABE"),
+				FunctionSelectors: [][4]byte{{188, 100, 93, 150}},
+			},
+		})
+	}).Return(nil)
 
 	return mockContract
 }

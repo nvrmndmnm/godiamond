@@ -54,3 +54,15 @@ func (m *MockBoundContract) Transact(opts *bind.TransactOpts, method string, par
 	}
 	return args.Get(0).(*types.Transaction), args.Error(1)
 }
+
+func (m *MockBoundContract) Call(opts *bind.CallOpts, results *[]interface{}, method string, params ...interface{}) error {
+	var args mock.Arguments
+
+	switch {
+	case method == "facets":
+		args = m.Called(opts, results, method)
+	default:
+		args = m.Called(opts, method, params)
+	}
+	return args.Error(0)
+}
