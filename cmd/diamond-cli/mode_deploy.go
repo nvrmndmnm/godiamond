@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/pflag"
 )
 
@@ -18,12 +20,17 @@ func NewDeployMode(box *DiamondBox) Mode {
 		Name: "deploy",
 		SubCommands: []*Command{
 			{
-				Name:        "facet",
-				Description: "Deploy a facet to use in an existing diamond",
+				Name:        "init",
+				Description: "Deploy and initialize mandatory Diamond standard contracts",
+				SubCommands: []*Command{},
+			},
+			{
+				Name:        "by-config-id",
+				Description: "Deploy a contract by ID specified in config file",
 				SubCommands: []*Command{
 					{
-						Name:        "metadata",
-						Description: "Path to the contract metadata file",
+						Name:        "id",
+						Description: "ID of the contract in config file",
 					},
 					{
 						Name:        "constructor-args",
@@ -32,9 +39,18 @@ func NewDeployMode(box *DiamondBox) Mode {
 				},
 			},
 			{
-				Name:        "init",
-				Description: "Deploy a facet to use in an existing diamond",
-				SubCommands: []*Command{},
+				Name:        "by-file",
+				Description: "Deploy a contract by specified file path",
+				SubCommands: []*Command{
+					{
+						Name:        "path",
+						Description: "path to the contract metadata file",
+					},
+					{
+						Name:        "constructor-args",
+						Description: "Comma-separated constructor arguments",
+					},
+				},
 			},
 		},
 	}
@@ -54,10 +70,42 @@ func (d *DeployMode) PrintUsage() {
 
 func (d *DeployMode) Execute(cmd *Command, flags *pflag.FlagSet, params ...interface{}) error {
 	switch cmd.Name {
-	case "facet":
-		metadataFilePath, err := flags.GetString("metadata")
+	case "init":
+		cutFacet, err := d.box.deployContractById("cut_facet")
 		if err != nil {
-			return fmt.Errorf("invalid metadata flag: %v", err)
+			return fmt.Errorf("failed to deploy the 'cut_facet' contract: %v", err)
+		}
+		writeDeploymentDataToFile(cutFacet)
+
+		owner := d.box.config.Accounts["anvil"].Address
+		diamond, err := d.box.deployContractById("diamond", owner, cutFacet.Address)
+		if err != nil {
+			return fmt.Errorf("failed to deploy the 'diamond' contract: %v", err)
+		}
+		writeDeploymentDataToFile(diamond)
+
+		diamondInit, err := d.box.deployContractById("diamond_init")
+		if err != nil {
+			return fmt.Errorf("failed to deploy the 'diamond_init' contract: %v", err)
+		}
+		writeDeploymentDataToFile(diamondInit)
+
+		loupeFacet, err := d.box.deployContractById("loupe_facet")
+		if err != nil {
+			return fmt.Errorf("failed to deploy the 'loupe_facet' contract: %v", err)
+		}
+		writeDeploymentDataToFile(loupeFacet)
+
+		if err = d.box.cutLoupeFacet(cutFacet.Address, loupeFacet.Address); err != nil {
+			return fmt.Errorf("failed to cut loupe facet: %v", err)
+		}
+
+		fmt.Printf("\nSuccessfully initialized Diamond contracts\n")
+
+	case "by-config-id":
+		contractIdentifier, err := flags.GetString("id")
+		if err != nil {
+			return fmt.Errorf("invalid identifier flag: %v", err)
 		}
 
 		constructorArgsStr, err := flags.GetString("constructor-args")
@@ -72,38 +120,46 @@ func (d *DeployMode) Execute(cmd *Command, flags *pflag.FlagSet, params ...inter
 			constructorArgs[i] = arg
 		}
 
-		deploymentData, err := d.box.deployContract(metadataFilePath, constructorArgsStr)
+		deploymentData, err := d.box.deployContractById(contractIdentifier, constructorArgsStr)
 		if err != nil {
 			return fmt.Errorf("failed to deploy the contract: %v", err)
 		}
 
 		writeDeploymentDataToFile(deploymentData)
+	}
 
-	case "init":
-		cutFacet, err := d.box.deployContract("cut_facet")
-		if err != nil {
-			return fmt.Errorf("failed to deploy the 'cut_facet' contract: %v", err)
-		}
-		writeDeploymentDataToFile(cutFacet)
+	return nil
+}
 
-		owner := d.box.config.Accounts["anvil"].Address
-		diamond, err := d.box.deployContract("diamond", owner, cutFacet.Address)
-		if err != nil {
-			return fmt.Errorf("failed to deploy the 'diamond' contract: %v", err)
-		}
-		writeDeploymentDataToFile(diamond)
+func (box *DiamondBox) cutLoupeFacet(cutFacetAddress, loupeFacetAddress common.Address) error {
+	cutContract := bind.NewBoundContract(box.config.Contracts["diamond"].Address,
+		box.contracts["cut_facet"].ABI, box.eth.client, box.eth.client, box.eth.client)
 
-		diamondInit, err := d.box.deployContract("diamond_init")
-		if err != nil {
-			return fmt.Errorf("failed to deploy the 'diamond_init' contract: %v", err)
-		}
-		writeDeploymentDataToFile(diamondInit)
+	calldata, err := box.contracts["diamond_init"].ABI.Pack("init")
+	if err != nil {
+		return err
+	}
 
-		loupeFacet, err := d.box.deployContract("loupe_facet")
-		if err != nil {
-			return fmt.Errorf("failed to deploy the 'loupe_facet' contract: %v", err)
+	loupeMethodIdentifiers := box.contracts["loupe_facet"].MethodIdentifiers
+	var loupeSelectors SelectorFlag
+
+	for _, selector := range loupeMethodIdentifiers {
+		if err := loupeSelectors.Set(selector); err != nil {
+			return err
 		}
-		writeDeploymentDataToFile(loupeFacet)
+	}
+
+	var cut []FacetCut
+	cut = append(cut, FacetCut{
+		FacetAddress:      loupeFacetAddress,
+		Action:            Add,
+		FunctionSelectors: loupeSelectors,
+	})
+
+	_, err = cutContract.Transact(box.eth.auth, "diamondCut", cut,
+		box.config.Contracts["diamond_init"].Address, calldata)
+	if err != nil {
+		return err
 	}
 
 	return nil

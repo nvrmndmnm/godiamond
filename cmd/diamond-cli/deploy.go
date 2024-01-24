@@ -23,7 +23,7 @@ type DeploymentData struct {
 	TxHash    string         `json:"tx"`
 }
 
-func (box *DiamondBox) deployContract(contractIdentifier string, params ...any) (*DeploymentData, error) {
+func (box *DiamondBox) deployContractById(contractIdentifier string, params ...any) (*DeploymentData, error) {
 	contractMetadata := box.contracts[contractIdentifier]
 
 	address, tx, _, err := bind.DeployContract(box.eth.auth,
@@ -55,7 +55,7 @@ func (box *DiamondBox) deployContract(contractIdentifier string, params ...any) 
 		TxHash:    tx.Hash().Hex(),
 	}
 
-	fmt.Printf("Facet address: %s\ntx: %s", address.Hex(), tx.Hash().Hex()+"\n")
+	fmt.Printf("%s address: %s\ntx: %s", contractIdentifier, address.Hex(), tx.Hash().Hex()+"\n")
 
 	return &deploymentData, nil
 }
