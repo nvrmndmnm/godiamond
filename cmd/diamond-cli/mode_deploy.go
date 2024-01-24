@@ -52,7 +52,7 @@ func (d *DeployMode) PrintUsage() {
 	PrintUsage(os.Stdout, d.commands)
 }
 
-func (d *DeployMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
+func (d *DeployMode) Execute(cmd *Command, flags *pflag.FlagSet, params ...interface{}) error {
 	switch cmd.Name {
 	case "facet":
 		metadataFilePath, err := flags.GetString("metadata")

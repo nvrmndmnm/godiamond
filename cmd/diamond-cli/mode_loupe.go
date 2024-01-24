@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -82,7 +83,7 @@ func (l *LoupeMode) PrintUsage() {
 	PrintUsage(os.Stdout, l.commands)
 }
 
-func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
+func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet, params ...interface{}) error {
 	var output string
 	var err error
 
@@ -147,7 +148,14 @@ func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
 		}
 	}
 
-	fmt.Println(output)
+	var out io.Writer = os.Stdout
+	if len(params) > 0 {
+		if writer, ok := params[0].(io.Writer); ok {
+			out = writer
+		}
+	}
+
+	fmt.Fprintln(out, output)
 
 	return nil
 }
@@ -170,7 +178,7 @@ func (l *LoupeMode) getFacetsOutput() (string, error) {
 		output += fmt.Sprintf("facet address: %v\n", facet.FacetAddress)
 
 		for selector, functionName := range selectorsMetadata {
-			output += fmt.Sprintf("\t%s: %s \n", selector, functionName)
+			output += fmt.Sprintf("\t%s: %s\n", selector, functionName)
 		}
 	}
 	return output, nil
@@ -208,7 +216,7 @@ func (l *LoupeMode) getFacetSelectorsOutput(facetAddress AddressFlag) (string, e
 	selectorsMetadata := getFunctionIdentifiersBySelectors(facetSelectors, contractMetadata)
 
 	for selector, functionName := range selectorsMetadata {
-		output += fmt.Sprintf("\t%s: %s \n", selector, functionName)
+		output += fmt.Sprintf("\t%s: %s\n", selector, functionName)
 	}
 	return output, nil
 }

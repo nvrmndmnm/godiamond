@@ -88,7 +88,7 @@ func (c *CutMode) PrintUsage() {
 	PrintUsage(os.Stdout, c.commands)
 }
 
-func (c *CutMode) Execute(cmd *Command, flags *pflag.FlagSet) error {
+func (c *CutMode) Execute(cmd *Command, flags *pflag.FlagSet, params ...interface{}) error {
 	calldata, err := c.box.contracts["diamond_init"].ABI.Pack("init")
 	if err != nil {
 		return fmt.Errorf("failed to pack calldata: %v", err)
