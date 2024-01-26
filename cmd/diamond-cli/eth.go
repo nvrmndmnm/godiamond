@@ -65,6 +65,9 @@ func convertStringParamsToType(strParams []string, types abi.Arguments) ([]inter
 	for i, value := range strParams {
 		switch types[i].Type.T {
 		case abi.AddressTy:
+			if !common.IsHexAddress(value) {
+				return nil, fmt.Errorf("%s is not a valid Ethereum address", value)
+			}
 			params[i] = common.HexToAddress(value)
 
 		case abi.BoolTy:
@@ -86,7 +89,7 @@ func convertStringParamsToType(strParams []string, types abi.Arguments) ([]inter
 		case abi.StringTy:
 			params[i] = value
 		}
-
 	}
+
 	return params, nil
 }
