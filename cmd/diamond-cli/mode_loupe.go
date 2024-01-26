@@ -162,7 +162,7 @@ func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet, params ...interf
 
 func (l *LoupeMode) getFacetsOutput() (string, error) {
 	var output string
-	var callResult []any
+	var callResult []interface{}
 
 	err := l.loupeContract.Call(&bind.CallOpts{}, &callResult, "facets")
 	if err != nil {
@@ -186,7 +186,7 @@ func (l *LoupeMode) getFacetsOutput() (string, error) {
 
 func (l *LoupeMode) getFacetAddressesOutput() (string, error) {
 	var output string
-	var callResult []any
+	var callResult []interface{}
 
 	err := l.loupeContract.Call(&bind.CallOpts{}, &callResult, "facetAddresses")
 	if err != nil {
@@ -203,7 +203,7 @@ func (l *LoupeMode) getFacetAddressesOutput() (string, error) {
 
 func (l *LoupeMode) getFacetSelectorsOutput(facetAddress AddressFlag) (string, error) {
 	var output string
-	var callResult []any
+	var callResult []interface{}
 
 	err := l.loupeContract.Call(&bind.CallOpts{}, &callResult, "facetFunctionSelectors", common.Address(facetAddress))
 	if err != nil {
@@ -223,7 +223,7 @@ func (l *LoupeMode) getFacetSelectorsOutput(facetAddress AddressFlag) (string, e
 
 func (l *LoupeMode) getFacetAddressOutput(functionSelector SelectorFlag) (string, error) {
 	var output string
-	var callResult []any
+	var callResult []interface{}
 
 	if len(functionSelector) > 1 {
 		return "", fmt.Errorf("a single selector is required")
@@ -244,7 +244,7 @@ func (l *LoupeMode) getFacetAddressOutput(functionSelector SelectorFlag) (string
 
 func (l *LoupeMode) getSupportsInterfaceOutput(interfaceId SelectorFlag) (string, error) {
 	var output string
-	var callResult []any
+	var callResult []interface{}
 
 	if len(interfaceId) > 1 {
 		return "", fmt.Errorf("a single identifier is required")
