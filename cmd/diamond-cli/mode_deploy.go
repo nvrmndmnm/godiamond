@@ -44,7 +44,7 @@ func NewDeployMode(box *DiamondBox) Mode {
 				SubCommands: []*Command{
 					{
 						Name:        "path",
-						Description: "path to the contract metadata file",
+						Description: "Path to the contract metadata file",
 					},
 					{
 						Name:        "constructor-args",
@@ -68,44 +68,48 @@ func (d *DeployMode) PrintUsage() {
 	PrintUsage(os.Stdout, d.commands)
 }
 
-func (d *DeployMode) Execute(cmd *Command, flags *pflag.FlagSet, params ...interface{}) error {
+func (d *DeployMode) Execute(cmd *Command, flags *pflag.FlagSet, modeParams ...interface{}) error {
+	var deployments []*DeploymentData
+
 	switch cmd.Name {
 	case "init":
 		cutFacet, err := d.box.deployContractById("cut_facet")
 		if err != nil {
 			return fmt.Errorf("failed to deploy the 'cut_facet' contract: %v", err)
 		}
-		writeDeploymentDataToFile(cutFacet)
+		deployments = append(deployments, cutFacet)
 
-		owner := d.box.config.Accounts["anvil"].Address
-		diamond, err := d.box.deployContractById("diamond", owner, cutFacet.Address)
+		owner := d.box.config.Accounts["anvil"].Address.Hex()
+		diamond, err := d.box.deployContractById("diamond", owner, cutFacet.Address.Hex())
 		if err != nil {
 			return fmt.Errorf("failed to deploy the 'diamond' contract: %v", err)
 		}
-		writeDeploymentDataToFile(diamond)
+		deployments = append(deployments, diamond)
 
 		diamondInit, err := d.box.deployContractById("diamond_init")
 		if err != nil {
 			return fmt.Errorf("failed to deploy the 'diamond_init' contract: %v", err)
 		}
-		writeDeploymentDataToFile(diamondInit)
+		deployments = append(deployments, diamondInit)
 
 		loupeFacet, err := d.box.deployContractById("loupe_facet")
 		if err != nil {
 			return fmt.Errorf("failed to deploy the 'loupe_facet' contract: %v", err)
 		}
-		writeDeploymentDataToFile(loupeFacet)
+		deployments = append(deployments, loupeFacet)
 
 		if err = d.box.cutLoupeFacet(cutFacet.Address, loupeFacet.Address); err != nil {
 			return fmt.Errorf("failed to cut loupe facet: %v", err)
 		}
 
-		fmt.Printf("\nSuccessfully initialized Diamond contracts\n")
-
 	case "by-config-id":
 		contractIdentifier, err := flags.GetString("id")
 		if err != nil {
 			return fmt.Errorf("invalid identifier flag: %v", err)
+		}
+
+		if contractIdentifier == "" {
+			return fmt.Errorf("identifier is required")
 		}
 
 		constructorArgsStr, err := flags.GetString("constructor-args")
@@ -115,19 +119,17 @@ func (d *DeployMode) Execute(cmd *Command, flags *pflag.FlagSet, params ...inter
 
 		argsList := strings.Split(constructorArgsStr, ",")
 
-		constructorArgs := make([]interface{}, len(argsList))
-		for i, arg := range argsList {
-			constructorArgs[i] = arg
-		}
-
-		deploymentData, err := d.box.deployContractById(contractIdentifier, constructorArgsStr)
+		deploymentData, err := d.box.deployContractById(contractIdentifier, argsList...)
 		if err != nil {
 			return fmt.Errorf("failed to deploy the contract: %v", err)
 		}
 
-		writeDeploymentDataToFile(deploymentData)
+		deployments = append(deployments, deploymentData)
 	}
 
+	if err := writeDeploymentDataToFile(deployments); err != nil {
+		return fmt.Errorf("failed to write deployment data: %v", err)
+	}
 	return nil
 }
 

@@ -23,8 +23,13 @@ type DeploymentData struct {
 	TxHash    string         `json:"tx"`
 }
 
-func (box *DiamondBox) deployContractById(contractIdentifier string, params ...any) (*DeploymentData, error) {
+func (box *DiamondBox) deployContractById(contractIdentifier string, strParams ...string) (*DeploymentData, error) {
 	contractMetadata := box.contracts[contractIdentifier]
+
+	params, err := convertStringParamsToType(strParams, contractMetadata.ABI.Constructor.Inputs)
+	if err != nil {
+		return nil, err
+	}
 
 	address, tx, _, err := bind.DeployContract(box.eth.auth,
 		contractMetadata.ABI,
@@ -60,34 +65,35 @@ func (box *DiamondBox) deployContractById(contractIdentifier string, params ...a
 	return &deploymentData, nil
 }
 
-func writeDeploymentDataToFile(data *DeploymentData) error {
-	jsonData, err := json.MarshalIndent(data, "", "    ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal deployment data: %v", err)
+func writeDeploymentDataToFile(data []*DeploymentData) error {
+	for _, entry := range data {
+		jsonData, err := json.MarshalIndent(entry, "", "    ")
+		if err != nil {
+			return fmt.Errorf("failed to marshal deployment data: %v", err)
+		}
+
+		date := time.Now().Format("2006-01-02")
+		time := time.Now().Format("15-04-05")
+
+		wd, err := os.Getwd()
+		if err != nil {
+			return fmt.Errorf("failed to get working directory: %v", err)
+		}
+
+		path := filepath.Join(wd, "out/deployments", date)
+
+		err = os.MkdirAll(path, 0755)
+		if err != nil {
+			return fmt.Errorf("failed to create a directory: %v", err)
+		}
+
+		fileName := entry.Name + "-" + time + ".json"
+		path = filepath.Join(path, fileName)
+
+		err = os.WriteFile(path, jsonData, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to write file: %v", err)
+		}
 	}
-
-	date := time.Now().Format("2006-01-02")
-	time := time.Now().Format("15-04-05")
-
-	wd, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("failed to get working directory: %v", err)
-	}
-
-	path := filepath.Join(wd, "out/deployments", date)
-
-	err = os.MkdirAll(path, 0755)
-	if err != nil {
-		return fmt.Errorf("failed to create a directory: %v", err)
-	}
-
-	fileName := data.Name + "-" + time + ".json"
-	path = filepath.Join(path, fileName)
-
-	err = os.WriteFile(path, jsonData, 0644)
-	if err != nil {
-		return fmt.Errorf("failed to write deployment data: %v", err)
-	}
-
 	return nil
 }

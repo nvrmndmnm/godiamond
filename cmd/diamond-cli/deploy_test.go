@@ -36,20 +36,22 @@ func TestDeployContract(t *testing.T) {
 }
 
 func TestWriteDeploymentDataToFile(t *testing.T) {
-	data := &DeploymentData{
-		Address:   common.HexToAddress("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"),
-		Deployer:  common.HexToAddress("0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE"),
-		Name:      "test",
-		Selectors: [][]string{{"test", "test"}},
-		ChainID:   *big.NewInt(1),
-		TxHash:    "test",
+	data := []*DeploymentData{
+		{
+			Address:   common.HexToAddress("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"),
+			Deployer:  common.HexToAddress("0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE"),
+			Name:      "test",
+			Selectors: [][]string{{"test", "test"}},
+			ChainID:   *big.NewInt(1),
+			TxHash:    "test",
+		},
 	}
 
 	err := writeDeploymentDataToFile(data)
 	assert.Nil(t, err)
 
 	path := filepath.Join("./out/deployments", time.Now().Format("2006-01-02"))
-	fileName := data.Name + "-" + time.Now().Format("15-04-05") + ".json"
+	fileName := data[0].Name + "-" + time.Now().Format("15-04-05") + ".json"
 	path = filepath.Join(path, fileName)
 
 	_, err = os.Stat(path)
