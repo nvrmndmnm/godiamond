@@ -69,30 +69,30 @@ func (d *DeployMode) PrintUsage() {
 }
 
 func (d *DeployMode) Execute(cmd *Command, flags *pflag.FlagSet, modeParams ...interface{}) error {
-	var deployments []*DeploymentData
+	var deployments []DeploymentData
 
 	switch cmd.Name {
 	case "init":
-		cutFacet, err := d.box.deployContractById("cut_facet")
+		cutFacet, err := d.box.deployContract(d.box.contracts["cut_facet"])
 		if err != nil {
 			return fmt.Errorf("failed to deploy the 'cut_facet' contract: %v", err)
 		}
 		deployments = append(deployments, cutFacet)
 
 		owner := d.box.config.Accounts["anvil"].Address.Hex()
-		diamond, err := d.box.deployContractById("diamond", owner, cutFacet.Address.Hex())
+		diamond, err := d.box.deployContract(d.box.contracts["diamond"], owner, cutFacet.Address.Hex())
 		if err != nil {
 			return fmt.Errorf("failed to deploy the 'diamond' contract: %v", err)
 		}
 		deployments = append(deployments, diamond)
 
-		diamondInit, err := d.box.deployContractById("diamond_init")
+		diamondInit, err := d.box.deployContract(d.box.contracts["diamond_init"])
 		if err != nil {
 			return fmt.Errorf("failed to deploy the 'diamond_init' contract: %v", err)
 		}
 		deployments = append(deployments, diamondInit)
 
-		loupeFacet, err := d.box.deployContractById("loupe_facet")
+		loupeFacet, err := d.box.deployContract(d.box.contracts["loupe_facet"])
 		if err != nil {
 			return fmt.Errorf("failed to deploy the 'loupe_facet' contract: %v", err)
 		}
@@ -119,7 +119,36 @@ func (d *DeployMode) Execute(cmd *Command, flags *pflag.FlagSet, modeParams ...i
 
 		argsList := strings.Split(constructorArgsStr, ",")
 
-		deploymentData, err := d.box.deployContractById(contractIdentifier, argsList...)
+		deploymentData, err := d.box.deployContract(d.box.contracts[contractIdentifier], argsList...)
+		if err != nil {
+			return fmt.Errorf("failed to deploy the contract: %v", err)
+		}
+
+		deployments = append(deployments, deploymentData)
+
+	case "by-file":
+		metadataFilePath, err := flags.GetString("path")
+		if err != nil {
+			return fmt.Errorf("invalid path flag: %v", err)
+		}
+
+		if metadataFilePath == "" {
+			return fmt.Errorf("path is required")
+		}
+
+		constructorArgsStr, err := flags.GetString("constructor-args")
+		if err != nil {
+			return fmt.Errorf("invalid constructor flag: %v", err)
+		}
+
+		argsList := strings.Split(constructorArgsStr, ",")
+
+		contractMetadata, err := getContractMetadataByFile(metadataFilePath)
+		if err != nil {
+			return fmt.Errorf("failed to load metadata: %v", err)
+		}
+
+		deploymentData, err := d.box.deployContract(contractMetadata, argsList...)
 		if err != nil {
 			return fmt.Errorf("failed to deploy the contract: %v", err)
 		}

@@ -18,17 +18,14 @@ type DeploymentData struct {
 	Deployer  common.Address `json:"deployer"`
 	Name      string         `json:"name"`
 	Selectors [][]string     `json:"selectors"`
-	RPC       string         `json:"rpc"`
 	ChainID   big.Int        `json:"chainId"`
 	TxHash    string         `json:"tx"`
 }
 
-func (box *DiamondBox) deployContractById(contractIdentifier string, strParams ...string) (*DeploymentData, error) {
-	contractMetadata := box.contracts[contractIdentifier]
-
+func (box *DiamondBox) deployContract(contractMetadata ContractMetadata, strParams ...string) (DeploymentData, error) {
 	params, err := convertStringParamsToType(strParams, contractMetadata.ABI.Constructor.Inputs)
 	if err != nil {
-		return nil, err
+		return DeploymentData{}, err
 	}
 
 	address, tx, _, err := bind.DeployContract(box.eth.auth,
@@ -36,7 +33,7 @@ func (box *DiamondBox) deployContractById(contractIdentifier string, strParams .
 		common.FromHex(contractMetadata.Bytecode.Object),
 		box.eth.client, params...)
 	if err != nil {
-		return nil, err
+		return DeploymentData{}, err
 	}
 
 	facetSelectors := make([][]string, 0, len(contractMetadata.MethodIdentifiers))
@@ -60,12 +57,12 @@ func (box *DiamondBox) deployContractById(contractIdentifier string, strParams .
 		TxHash:    tx.Hash().Hex(),
 	}
 
-	fmt.Printf("%s address: %s\ntx: %s", contractIdentifier, address.Hex(), tx.Hash().Hex()+"\n")
+	fmt.Printf("%s address: %s\ntx: %s", deploymentData.Name, address.Hex(), tx.Hash().Hex()+"\n")
 
-	return &deploymentData, nil
+	return deploymentData, nil
 }
 
-func writeDeploymentDataToFile(data []*DeploymentData) error {
+func writeDeploymentDataToFile(data []DeploymentData) error {
 	for _, entry := range data {
 		jsonData, err := json.MarshalIndent(entry, "", "    ")
 		if err != nil {

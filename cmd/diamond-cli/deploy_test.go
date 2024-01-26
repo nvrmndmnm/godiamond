@@ -36,7 +36,7 @@ func TestDeployContract(t *testing.T) {
 }
 
 func TestWriteDeploymentDataToFile(t *testing.T) {
-	data := []*DeploymentData{
+	data := []DeploymentData{
 		{
 			Address:   common.HexToAddress("0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"),
 			Deployer:  common.HexToAddress("0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE"),

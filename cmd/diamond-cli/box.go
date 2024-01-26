@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -48,19 +49,11 @@ func NewDiamondBox(config Config,
 		contracts: make(map[string]ContractMetadata),
 	}
 
-	for contractIdentifier, contractMeta := range config.Contracts {
-		var contractMetadata ContractMetadata
-
-		metadataFile, err := os.ReadFile(contractMeta.MetadataFilePath)
+	for contractIdentifier, contractConfig := range config.Contracts {
+		contractMetadata, err := getContractMetadataByFile(contractConfig.MetadataFilePath)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read metadata file: %v", err)
+			return nil, err
 		}
-
-		err = json.Unmarshal(metadataFile, &contractMetadata)
-		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal metadata file: %v", err)
-		}
-
 		box.contracts[contractIdentifier] = contractMetadata
 	}
 
@@ -119,6 +112,22 @@ func (box *DiamondBox) getContractMetadataByAddress(address common.Address) (*Co
 	}
 
 	return nil, fmt.Errorf("contract address not found in config")
+}
+
+func getContractMetadataByFile(path string) (ContractMetadata, error) {
+	var contractMetadata ContractMetadata
+
+	path = strings.Trim(path, "\"")
+	metadataFile, err := os.ReadFile(path)
+	if err != nil {
+		return ContractMetadata{}, fmt.Errorf("failed to read metadata file: %v", err)
+	}
+
+	err = json.Unmarshal(metadataFile, &contractMetadata)
+	if err != nil {
+		return ContractMetadata{}, fmt.Errorf("failed to unmarshal metadata file: %v", err)
+	}
+	return contractMetadata, nil
 }
 
 func getFunctionIdentifiersBySelectors(selectors [][4]byte, contractMetadata *ContractMetadata) map[string]string {
