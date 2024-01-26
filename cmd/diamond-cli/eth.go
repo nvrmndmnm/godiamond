@@ -3,9 +3,13 @@ package main
 import (
 	"context"
 	"crypto/ecdsa"
+	"fmt"
 	"math/big"
+	"strconv"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -52,4 +56,37 @@ func (eth *EthereumWrapper) HexToECDSA(hexkey string) (*ecdsa.PrivateKey, error)
 
 func (eth *EthereumWrapper) Close() {
 	eth.client.Close()
+}
+
+func convertStringParamsToType(strParams []string, types abi.Arguments) ([]interface{}, error) {
+	params := make([]interface{}, len(strParams))
+	var err error
+
+	for i, value := range strParams {
+		switch types[i].Type.T {
+		case abi.AddressTy:
+			params[i] = common.HexToAddress(value)
+
+		case abi.BoolTy:
+			params[i], err = strconv.ParseBool(value)
+			if err != nil {
+				return nil, err
+			}
+
+		case abi.BytesTy:
+			params[i] = []byte(value)
+
+		case abi.IntTy, abi.UintTy:
+			res, ok := new(big.Int).SetString(value, 0)
+			if !ok {
+				return nil, fmt.Errorf("failed to convert to big.Int: %s", value)
+			}
+			params[i] = res
+
+		case abi.StringTy:
+			params[i] = value
+		}
+
+	}
+	return params, nil
 }
