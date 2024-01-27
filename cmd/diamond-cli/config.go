@@ -15,7 +15,7 @@ type EOA struct {
 }
 
 type ContractConfig struct {
-	Address          common.Address `koanf:"address"`
+	Address          *common.Address `koanf:"address"`
 	MetadataFilePath string         `koanf:"metadata"`
 }
 

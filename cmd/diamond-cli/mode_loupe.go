@@ -69,7 +69,7 @@ func NewLoupeMode(box *DiamondBox) Mode {
 
 	commands.SubCommands = append(commands.SubCommands, defaultCommands.SubCommands...)
 
-	loupeContract := bind.NewBoundContract(box.config.Contracts["diamond"].Address,
+	loupeContract := bind.NewBoundContract(*box.config.Contracts["diamond"].Address,
 		box.contracts["loupe_facet"].ABI, box.eth.client, box.eth.client, box.eth.client)
 
 	return &LoupeMode{commands: commands, box: box, loupeContract: loupeContract}
