@@ -163,8 +163,9 @@ func (d *DeployMode) Execute(cmd *Command, flags *pflag.FlagSet, modeParams ...i
 }
 
 func (box *DiamondBox) cutLoupeFacet(cutFacetAddress, loupeFacetAddress common.Address) error {
-	cutContract := bind.NewBoundContract(*box.config.Contracts["diamond"].Address,
-		box.contracts["cut_facet"].ABI, box.eth.client, box.eth.client, box.eth.client)
+	diamondAddress := common.HexToAddress(box.config.Contracts["diamond"].Address)
+	cutContract := bind.NewBoundContract(diamondAddress, box.contracts["cut_facet"].ABI,
+		box.eth.client, box.eth.client, box.eth.client)
 
 	calldata, err := box.contracts["diamond_init"].ABI.Pack("init")
 	if err != nil {
