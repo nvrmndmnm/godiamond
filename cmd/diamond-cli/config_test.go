@@ -12,7 +12,7 @@ func TestLoadConfig(t *testing.T) {
 	assert.NoError(t, err, "Failed to setup box")
 
 	config := box.config
-	
+
 	assert.Len(t, config.Accounts, 1, "Invalid number of EOA accounts")
 	assert.Equal(t, "0xcafebabecafebabecafebabecafebabecafebabecafebabecafebabecafebabe",
 		config.Accounts["anvil"].PrivateKey, "Invalid private key for anvil")
@@ -22,7 +22,7 @@ func TestLoadConfig(t *testing.T) {
 	assert.Equal(t, "http://localhost:8545", config.RPC["test"], "Invalid RPC url")
 	assert.Len(t, config.Contracts, 5, "Invalid number of contracts")
 	assert.Equal(t, common.HexToAddress("0xABADBABEABADBABEABADBABEABADBABEABADBABE"),
-		config.Contracts["diamond"].Address, "Invalid address for diamond contract")
+		common.HexToAddress(config.Contracts["diamond"].Address), "Invalid address for diamond contract")
 	assert.Equal(t, "./testdata/TestDiamond.json",
 		config.Contracts["diamond"].MetadataFilePath, "Invalid metadata file path for diamond contract")
 }

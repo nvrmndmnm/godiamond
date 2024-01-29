@@ -134,9 +134,10 @@ func (c *CutMode) Execute(cmd *Command, flags *pflag.FlagSet, params ...interfac
 		Action:            action,
 		FunctionSelectors: functionSelectors,
 	})
-
+	
+	diamondInitAddress := common.HexToAddress(c.box.config.Contracts["diamond_init"].Address)
 	tx, err := c.cutContract.Transact(c.box.eth.auth, "diamondCut", cut,
-		c.box.config.Contracts["diamond_init"].Address, calldata)
+		diamondInitAddress, calldata)
 	if err != nil {
 		return fmt.Errorf("failed to cut diamond: %v", err)
 	}

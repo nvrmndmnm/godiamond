@@ -104,7 +104,7 @@ func (box *DiamondBox) Close() {
 
 func (box *DiamondBox) getContractMetadataByAddress(address common.Address) (*ContractMetadata, error) {
 	for id, contract := range box.config.Contracts {
-		if contract.Address == address.Hex() {
+		if common.HexToAddress(contract.Address) == address {
 			contractMetadata := box.contracts[id]
 
 			return &contractMetadata, nil

@@ -173,7 +173,7 @@ func (l *LoupeMode) getFacetsOutput() (string, error) {
 	facets := *abi.ConvertType(callResult[0], new([]LoupeFacet)).(*[]LoupeFacet)
 
 	for _, facet := range facets {
-		contractMetadata, _ := l.box.getContractMetadataByAddress(common.Address(facet.FacetAddress))
+		contractMetadata, _ := l.box.getContractMetadataByAddress(facet.FacetAddress)
 		selectorsMetadata := getFunctionIdentifiersBySelectors(facet.FunctionSelectors, contractMetadata)
 
 		output += fmt.Sprintf("facet address: %v\n", facet.FacetAddress)
