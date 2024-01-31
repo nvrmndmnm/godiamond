@@ -48,5 +48,8 @@ func TestDeployMode_Execute(t *testing.T) {
 	if !ok {
 		t.Fatalf("Expected type DeployMode, got %T", mode)
 	}
-	t.Log(deployMode)
+
+	assert.NotNil(t, deployMode)
+	assert.Equal(t, box, deployMode.box)
+	assert.Equal(t, "deploy", deployMode.commands.Name)
 }
