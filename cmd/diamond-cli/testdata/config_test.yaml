@@ -3,7 +3,7 @@ eoa:
     private_key: "0xcafebabecafebabecafebabecafebabecafebabecafebabecafebabecafebabe"
     address:     "0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE"
 rpc:
-  "test": "http://localhost:8545"
+  "test": "http://localhost:6969"
 contracts:
   diamond: 
     address: "0xABADBABEABADBABEABADBABEABADBABEABADBABE"

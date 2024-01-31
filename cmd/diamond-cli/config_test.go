@@ -19,7 +19,7 @@ func TestLoadConfig(t *testing.T) {
 	assert.Equal(t, common.HexToAddress("0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE"),
 		config.Accounts["anvil"].Address, "Invalid address for anvil")
 	assert.Len(t, config.RPC, 1, "Invalid number of RPC urls")
-	assert.Equal(t, "http://localhost:8545", config.RPC["test"], "Invalid RPC url")
+	assert.Equal(t, "http://localhost:6969", config.RPC["test"], "Invalid RPC url")
 	assert.Len(t, config.Contracts, 5, "Invalid number of contracts")
 	assert.Equal(t, common.HexToAddress("0xABADBABEABADBABEABADBABEABADBABEABADBABE"),
 		common.HexToAddress(config.Contracts["diamond"].Address), "Invalid address for diamond contract")

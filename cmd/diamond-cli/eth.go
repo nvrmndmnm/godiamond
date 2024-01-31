@@ -20,14 +20,6 @@ type BoundContract interface {
 	Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error)
 }
 
-type EthereumClient interface {
-	Dial(rawurl string) (*ethclient.Client, error)
-	NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey, chainID *big.Int) (*bind.TransactOpts, error)
-	NetworkID(ctx context.Context) (*big.Int, error)
-	SuggestGasPrice(ctx context.Context) (*big.Int, error)
-	HexToECDSA(hexkey string) (*ecdsa.PrivateKey, error)
-}
-
 type EthereumWrapper struct {
 	client  *ethclient.Client
 	auth    *bind.TransactOpts

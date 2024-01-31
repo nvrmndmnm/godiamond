@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"crypto/ecdsa"
 	"errors"
 	"math/big"
 
@@ -14,8 +16,8 @@ import (
 
 func setupBox() (*DiamondBox, error) {
 	mockEth := new(MockEthereumWrapper)
-	mockClient := &ethclient.Client{}
-	mockEth.On("Dial", "http://localhost:8545").Return(mockClient, nil)
+
+	mockEth.On("Dial", "http://localhost:6969").Return(&ethclient.Client{}, nil)
 	mockEth.On("Dial", "http://some-other-url").Return(nil, errors.New("failed to connect"))
 
 	testConfig, err := loadConfig("testdata/config_test.yaml")
@@ -24,14 +26,41 @@ func setupBox() (*DiamondBox, error) {
 	}
 
 	sugar := zap.NewExample().Sugar()
-	modeName := "cut"
 	rpcName := "test"
-	chainId := big.NewInt(-1)
 
-	box, err := NewDiamondBox(testConfig, sugar, modeName, rpcName, chainId)
-	if err != nil {
-		return nil, err
+	box := &DiamondBox{
+		config:    testConfig,
+		sugar:     sugar,
+		eth:       &EthereumWrapper{},
+		contracts: map[string]ContractMetadata{},
 	}
+
+	for contractIdentifier, contractConfig := range testConfig.Contracts {
+		contractMetadata, err := getContractMetadataByFile(contractConfig.MetadataFilePath)
+		if err != nil {
+			return nil, err
+		}
+		box.contracts[contractIdentifier] = contractMetadata
+	}
+
+	mockClient, _ := mockEth.Dial(box.config.RPC[rpcName])
+	box.eth.client = mockClient
+
+	chainId := big.NewInt(-1)
+	box.eth.chainId = chainId
+
+	hexkey := testConfig.Accounts["anvil"].PrivateKey[2:]
+	mockEth.On("HexToECDSA", hexkey).Return(&ecdsa.PrivateKey{}, nil)
+	privateKey, _ := mockEth.HexToECDSA(hexkey)
+
+	mockEth.On("NewKeyedTransactorWithChainID", privateKey, box.eth.chainId).Return(&bind.TransactOpts{}, nil)
+	auth, _ := mockEth.NewKeyedTransactorWithChainID(privateKey, box.eth.chainId)
+
+	mockEth.On("SuggestGasPrice", context.Background()).Return(&big.Int{}, nil)
+	gasPrice, _ := mockEth.SuggestGasPrice(context.Background())
+	auth.GasPrice = gasPrice
+
+	box.eth.auth = auth
 
 	return box, nil
 }

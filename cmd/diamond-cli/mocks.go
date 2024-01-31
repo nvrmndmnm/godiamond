@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"crypto/ecdsa"
-	"errors"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -24,19 +23,36 @@ func (m *MockEthereumWrapper) Dial(rawurl string) (*ethclient.Client, error) {
 }
 
 func (m *MockEthereumWrapper) NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey, chainID *big.Int) (*bind.TransactOpts, error) {
-	return nil, nil
+	args := m.Called(key, chainID)
+	return args.Get(0).(*bind.TransactOpts), args.Error(1)
 }
 
 func (m *MockEthereumWrapper) NetworkID(ctx context.Context) (*big.Int, error) {
-	return big.NewInt(1), nil
+	args := m.Called(ctx)
+	return args.Get(0).(*big.Int), args.Error(1)
 }
 
 func (m *MockEthereumWrapper) SuggestGasPrice(ctx context.Context) (*big.Int, error) {
-	return big.NewInt(21000), nil
+	args := m.Called(ctx)
+	return args.Get(0).(*big.Int), args.Error(1)
 }
 
 func (m *MockEthereumWrapper) HexToECDSA(hexkey string) (*ecdsa.PrivateKey, error) {
-	return nil, errors.New("HexToECDSA failed")
+	args := m.Called(hexkey)
+	return args.Get(0).(*ecdsa.PrivateKey), args.Error(1)
+}
+
+func (m *MockEthereumWrapper) Close() {
+	m.Called()
+}
+
+func (m *MockEthereumWrapper) SetClient(client *ethclient.Client) {
+	m.Called(client)
+}
+
+func (m *MockEthereumWrapper) GetClient() *ethclient.Client {
+	args := m.Called()
+	return args.Get(0).(*ethclient.Client)
 }
 
 // MockBoundContract is a mock object that implements the BoundContract interface.
