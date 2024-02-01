@@ -1,13 +1,15 @@
-package main
+package diamond
 
 import (
 	"bytes"
 	"reflect"
 	"testing"
+
+	"github.com/nvrmndmnm/godiamond/internal/cli"
 )
 
 func TestNewModeFactory(t *testing.T) {
-	box, err := setupBox()
+	box, err := SetupBox()
 	if err != nil {
 		t.Fatalf("Failed to create DiamondBox: %v", err)
 	}
@@ -44,7 +46,7 @@ func TestNewModeFactory(t *testing.T) {
 }
 
 func TestCreateMode(t *testing.T) {
-	box, err := setupBox()
+	box, err := SetupBox()
 	if err != nil {
 		t.Fatalf("Failed to create DiamondBox: %v", err)
 	}
@@ -73,8 +75,8 @@ func TestCreateMode(t *testing.T) {
 }
 
 func TestPrintUsage(t *testing.T) {
-	command := &Command{
-		SubCommands: []*Command{
+	command := &cli.Command{
+		SubCommands: []*cli.Command{
 			{
 				Name:        "test",
 				Description: "Test command",

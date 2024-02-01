@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"testing"
@@ -8,10 +8,8 @@ import (
 )
 
 func TestLoadConfig(t *testing.T) {
-	box, err := setupBox()
-	assert.NoError(t, err, "Failed to setup box")
-
-	config := box.config
+	config, err := LoadConfig("../../testdata/config_test.yaml")
+	assert.NoError(t, err, "Failed to load config")
 
 	assert.Len(t, config.Accounts, 1, "Invalid number of EOA accounts")
 	assert.Equal(t, "0xcafebabecafebabecafebabecafebabecafebabecafebabecafebabecafebabe",
@@ -23,20 +21,18 @@ func TestLoadConfig(t *testing.T) {
 	assert.Len(t, config.Contracts, 5, "Invalid number of contracts")
 	assert.Equal(t, common.HexToAddress("0xABADBABEABADBABEABADBABEABADBABEABADBABE"),
 		common.HexToAddress(config.Contracts["diamond"].Address), "Invalid address for diamond contract")
-	assert.Equal(t, "./testdata/TestDiamond.json",
+	assert.Equal(t, "../../testdata/TestDiamond.json",
 		config.Contracts["diamond"].MetadataFilePath, "Invalid metadata file path for diamond contract")
 }
 
 func TestValidateStandardContracts(t *testing.T) {
-	box, err := setupBox()
-	assert.NoError(t, err, "Failed to setup box")
+	config, err := LoadConfig("../../testdata/config_test.yaml")
+	assert.NoError(t, err, "Failed to load config")
 
-	config := box.config
-
-	err = config.validateStandardContracts()
+	err = config.ValidateStandardContracts()
 	assert.NoError(t, err, "Failed to validate config")
 
 	delete(config.Contracts, "diamond")
-	err = config.validateStandardContracts()
+	err = config.ValidateStandardContracts()
 	assert.Error(t, err)
 }

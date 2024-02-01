@@ -1,9 +1,10 @@
-package main
+package diamond
 
 import (
 	"fmt"
 	"io"
 
+	"github.com/nvrmndmnm/godiamond/internal/cli"
 	"github.com/spf13/pflag"
 )
 
@@ -12,13 +13,13 @@ type ModeFactory struct {
 }
 
 type Mode interface {
-	Execute(cmd *Command, flags *pflag.FlagSet, params ...interface{}) error
-	GetCommands() *Command
+	Execute(cmd *cli.Command, flags *pflag.FlagSet, params ...interface{}) error
+	GetCommands() *cli.Command
 	PrintUsage()
 }
 
-var defaultCommands = &Command{
-	SubCommands: []*Command{
+var defaultCommands = &cli.Command{
+	SubCommands: []*cli.Command{
 		{
 			Name:        "help",
 			Description: "Show help message",
@@ -47,7 +48,7 @@ func (f *ModeFactory) CreateMode(name string) Mode {
 	return nil
 }
 
-func PrintUsage(w io.Writer, c *Command) {
+func PrintUsage(w io.Writer, c *cli.Command) {
 	fmt.Fprintf(w, "\nCommands:\n")
 
 	for _, cmd := range c.SubCommands {

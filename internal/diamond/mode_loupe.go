@@ -1,4 +1,4 @@
-package main
+package diamond
 
 import (
 	"fmt"
@@ -6,15 +6,17 @@ import (
 	"os"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/nvrmndmnm/godiamond/internal/cli"
+	"github.com/nvrmndmnm/godiamond/internal/ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/pflag"
 )
 
 type LoupeMode struct {
-	commands      *Command
+	commands      *cli.Command
 	box           *DiamondBox
-	loupeContract BoundContract
+	loupeContract ethereum.BoundContract
 }
 
 type LoupeFacet struct {
@@ -23,9 +25,9 @@ type LoupeFacet struct {
 }
 
 func NewLoupeMode(box *DiamondBox) Mode {
-	commands := &Command{
+	commands := &cli.Command{
 		Name: "loupe",
-		SubCommands: []*Command{
+		SubCommands: []*cli.Command{
 			{
 				Name:        "facets",
 				Description: "Show all facets and their selectors",
@@ -37,7 +39,7 @@ func NewLoupeMode(box *DiamondBox) Mode {
 			{
 				Name:        "facet-selectors",
 				Description: "Show all function selectors provided by a facet",
-				SubCommands: []*Command{
+				SubCommands: []*cli.Command{
 					{
 						Name:        "address",
 						Description: "Ethereum address of a facet",
@@ -47,7 +49,7 @@ func NewLoupeMode(box *DiamondBox) Mode {
 			{
 				Name:        "facet-address",
 				Description: "Show the facet that supports the given selector",
-				SubCommands: []*Command{
+				SubCommands: []*cli.Command{
 					{
 						Name:        "selector",
 						Description: "Function selector",
@@ -57,7 +59,7 @@ func NewLoupeMode(box *DiamondBox) Mode {
 			{
 				Name:        "supports-interface",
 				Description: "Show if the contract implements an interface",
-				SubCommands: []*Command{
+				SubCommands: []*cli.Command{
 					{
 						Name:        "id",
 						Description: "Interface identifier",
@@ -68,15 +70,15 @@ func NewLoupeMode(box *DiamondBox) Mode {
 	}
 
 	commands.SubCommands = append(commands.SubCommands, defaultCommands.SubCommands...)
-	
-	diamondAddress := common.HexToAddress(box.config.Contracts["diamond"].Address)
-	loupeContract := bind.NewBoundContract(diamondAddress, box.contracts["loupe_facet"].ABI,
-		box.eth.client, box.eth.client, box.eth.client)
+
+	diamondAddress := common.HexToAddress(box.Config.Contracts["diamond"].Address)
+	loupeContract := bind.NewBoundContract(diamondAddress, box.Contracts["loupe_facet"].ABI,
+		box.Eth.Client, box.Eth.Client, box.Eth.Client)
 
 	return &LoupeMode{commands: commands, box: box, loupeContract: loupeContract}
 }
 
-func (l *LoupeMode) GetCommands() *Command {
+func (l *LoupeMode) GetCommands() *cli.Command {
 	return l.commands
 }
 
@@ -84,7 +86,7 @@ func (l *LoupeMode) PrintUsage() {
 	PrintUsage(os.Stdout, l.commands)
 }
 
-func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet, params ...interface{}) error {
+func (l *LoupeMode) Execute(cmd *cli.Command, flags *pflag.FlagSet, params ...interface{}) error {
 	var output string
 	var err error
 
@@ -102,7 +104,7 @@ func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet, params ...interf
 		}
 
 	case "facet-selectors":
-		var facetAddress AddressFlag
+		var facetAddress cli.AddressFlag
 		addressString, err := flags.GetString("address")
 		if err != nil {
 			return fmt.Errorf("invalid address flag: %v", err)
@@ -117,7 +119,7 @@ func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet, params ...interf
 		}
 
 	case "facet-address":
-		var functionSelector SelectorFlag
+		var functionSelector cli.SelectorFlag
 		selectorString, err := flags.GetString("selector")
 		if err != nil {
 			return fmt.Errorf("invalid selector flag: %v", err)
@@ -133,7 +135,7 @@ func (l *LoupeMode) Execute(cmd *Command, flags *pflag.FlagSet, params ...interf
 		}
 
 	case "supports-interface":
-		var interfaceId SelectorFlag
+		var interfaceId cli.SelectorFlag
 		interfaceIdString, err := flags.GetString("id")
 		if err != nil {
 			return fmt.Errorf("invalid id flag: %v", err)
@@ -202,7 +204,7 @@ func (l *LoupeMode) getFacetAddressesOutput() (string, error) {
 	return output, nil
 }
 
-func (l *LoupeMode) getFacetSelectorsOutput(facetAddress AddressFlag) (string, error) {
+func (l *LoupeMode) getFacetSelectorsOutput(facetAddress cli.AddressFlag) (string, error) {
 	var output string
 	var callResult []interface{}
 
@@ -222,7 +224,7 @@ func (l *LoupeMode) getFacetSelectorsOutput(facetAddress AddressFlag) (string, e
 	return output, nil
 }
 
-func (l *LoupeMode) getFacetAddressOutput(functionSelector SelectorFlag) (string, error) {
+func (l *LoupeMode) getFacetAddressOutput(functionSelector cli.SelectorFlag) (string, error) {
 	var output string
 	var callResult []interface{}
 
@@ -243,7 +245,7 @@ func (l *LoupeMode) getFacetAddressOutput(functionSelector SelectorFlag) (string
 	return output, nil
 }
 
-func (l *LoupeMode) getSupportsInterfaceOutput(interfaceId SelectorFlag) (string, error) {
+func (l *LoupeMode) getSupportsInterfaceOutput(interfaceId cli.SelectorFlag) (string, error) {
 	var output string
 	var callResult []interface{}
 

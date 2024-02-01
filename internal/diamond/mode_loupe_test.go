@@ -1,17 +1,18 @@
-package main
+package diamond
 
 import (
 	"bytes"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/nvrmndmnm/godiamond/internal/cli"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
 func TestNewLoupeMode(t *testing.T) {
-	box, err := setupBox()
+	box, err := SetupBox()
 	if err != nil {
 		t.Fatalf("Failed to create DiamondBox: %v", err)
 	}
@@ -27,7 +28,7 @@ func TestNewLoupeMode(t *testing.T) {
 	assert.Equal(t, "loupe", loupeMode.commands.Name)
 }
 func TestLoupeMode_GetCommands(t *testing.T) {
-	box, err := setupBox()
+	box, err := SetupBox()
 	if err != nil {
 		t.Fatalf("Failed to create DiamondBox: %v", err)
 	}
@@ -42,7 +43,7 @@ func TestLoupeMode_GetCommands(t *testing.T) {
 }
 
 func TestLoupeMode_Execute(t *testing.T) {
-	box, err := setupBox()
+	box, err := SetupBox()
 	if err != nil {
 		t.Fatalf("Failed to create DiamondBox: %v", err)
 	}
@@ -53,10 +54,10 @@ func TestLoupeMode_Execute(t *testing.T) {
 		t.Fatalf("Expected type LoupeMode, got %T", mode)
 	}
 
-	mockContract := setupMockLoupeContract()
+	mockContract := SetupMockLoupeContract()
 
 	loupeMode.loupeContract = mockContract
-	cmd := &Command{Name: "facets"}
+	cmd := &cli.Command{Name: "facets"}
 	flags := pflag.NewFlagSet("test", pflag.ContinueOnError)
 
 	buf := new(bytes.Buffer)

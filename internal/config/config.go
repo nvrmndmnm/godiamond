@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ type Config struct {
 	Contracts map[string]ContractConfig `koanf:"contracts"`
 }
 
-func loadConfig(path string) (Config, error) {
+func LoadConfig(path string) (Config, error) {
 	var config Config
 
 	k := koanf.New(".")
@@ -40,7 +40,7 @@ func loadConfig(path string) (Config, error) {
 	return config, nil
 }
 
-func (c *Config) validateStandardContracts() error {
+func (c *Config) ValidateStandardContracts() error {
 	standardContracts := []string{"diamond", "diamond_init", "cut_facet", "loupe_facet"}
 	for _, contract := range standardContracts {
 		if _, ok := c.Contracts[contract]; !ok {

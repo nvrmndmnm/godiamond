@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"reflect"
@@ -63,7 +63,7 @@ func TestCommandCompleter(t *testing.T) {
 	for _, tc := range testCases {
 		buffer := prompt.NewBuffer()
 		buffer.InsertText(tc.input, false, true)
-		suggestions := cmd.completer(*buffer.Document())
+		suggestions := cmd.Completer(*buffer.Document())
 
 		if !reflect.DeepEqual(suggestions, tc.expected) {
 			t.Errorf("Unexpected completions for input '%s': got %v, expected %v",

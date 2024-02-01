@@ -1,4 +1,4 @@
-package main
+package diamond
 
 import (
 	"encoding/json"
@@ -7,8 +7,10 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -28,10 +30,10 @@ func (box *DiamondBox) deployContract(contractMetadata ContractMetadata, strPara
 		return DeploymentData{}, err
 	}
 
-	address, tx, _, err := bind.DeployContract(box.eth.auth,
+	address, tx, _, err := bind.DeployContract(box.Eth.Auth,
 		contractMetadata.ABI,
 		common.FromHex(contractMetadata.Bytecode.Object),
-		box.eth.client, params...)
+		box.Eth.Client, params...)
 	if err != nil {
 		return DeploymentData{}, err
 	}
@@ -50,10 +52,10 @@ func (box *DiamondBox) deployContract(contractMetadata ContractMetadata, strPara
 
 	deploymentData := DeploymentData{
 		Address:   address,
-		Deployer:  box.eth.auth.From,
+		Deployer:  box.Eth.Auth.From,
 		Name:      contractMetadata.AST.Nodes[len(contractMetadata.AST.Nodes)-1].Name,
 		Selectors: facetSelectors,
-		ChainID:   *box.eth.chainId,
+		ChainID:   *box.Eth.ChainId,
 		TxHash:    tx.Hash().Hex(),
 	}
 
@@ -93,4 +95,40 @@ func writeDeploymentDataToFile(data []DeploymentData) error {
 		}
 	}
 	return nil
+}
+
+func convertStringParamsToType(strParams []string, types abi.Arguments) ([]interface{}, error) {
+	params := make([]interface{}, len(strParams))
+	var err error
+
+	for i, value := range strParams {
+		switch types[i].Type.T {
+		case abi.AddressTy:
+			if !common.IsHexAddress(value) {
+				return nil, fmt.Errorf("%s is not a valid Ethereum address", value)
+			}
+			params[i] = common.HexToAddress(value)
+
+		case abi.BoolTy:
+			params[i], err = strconv.ParseBool(value)
+			if err != nil {
+				return nil, err
+			}
+
+		case abi.BytesTy:
+			params[i] = []byte(value)
+
+		case abi.IntTy, abi.UintTy:
+			res, ok := new(big.Int).SetString(value, 0)
+			if !ok {
+				return nil, fmt.Errorf("failed to convert to big.Int: %s", value)
+			}
+			params[i] = res
+
+		case abi.StringTy:
+			params[i] = value
+		}
+	}
+
+	return params, nil
 }

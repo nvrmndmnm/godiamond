@@ -1,4 +1,4 @@
-package main
+package diamond
 
 import (
 	"math/big"

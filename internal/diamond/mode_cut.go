@@ -1,18 +1,20 @@
-package main
+package diamond
 
 import (
 	"fmt"
 	"os"
 
+	"github.com/nvrmndmnm/godiamond/internal/cli"
+	"github.com/nvrmndmnm/godiamond/internal/ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/pflag"
 )
 
 type CutMode struct {
-	commands    *Command
+	commands    *cli.Command
 	box         *DiamondBox
-	cutContract BoundContract
+	cutContract ethereum.BoundContract
 }
 
 type FacetCut struct {
@@ -28,13 +30,13 @@ const (
 )
 
 func NewCutMode(box *DiamondBox) Mode {
-	commands := &Command{
+	commands := &cli.Command{
 		Name: "cut",
-		SubCommands: []*Command{
+		SubCommands: []*cli.Command{
 			{
 				Name:        "add",
 				Description: "Add a new facet with specified function selectors",
-				SubCommands: []*Command{
+				SubCommands: []*cli.Command{
 					{
 						Name:        "address",
 						Description: "Ethereum address of a facet",
@@ -48,7 +50,7 @@ func NewCutMode(box *DiamondBox) Mode {
 			{
 				Name:        "replace",
 				Description: "Replace selectors of an existing facet",
-				SubCommands: []*Command{
+				SubCommands: []*cli.Command{
 					{
 						Name:        "address",
 						Description: "Ethereum address of a facet",
@@ -62,7 +64,7 @@ func NewCutMode(box *DiamondBox) Mode {
 			{
 				Name:        "remove",
 				Description: "Remove selectors from the diamond",
-				SubCommands: []*Command{
+				SubCommands: []*cli.Command{
 					{
 						Name:        "selectors",
 						Description: "Comma-separated function selectors",
@@ -74,14 +76,14 @@ func NewCutMode(box *DiamondBox) Mode {
 
 	commands.SubCommands = append(commands.SubCommands, defaultCommands.SubCommands...)
 
-	diamondAddress := common.HexToAddress(box.config.Contracts["diamond"].Address)
-	cutContract := bind.NewBoundContract(diamondAddress, box.contracts["cut_facet"].ABI,
-		box.eth.client, box.eth.client, box.eth.client)
+	diamondAddress := common.HexToAddress(box.Config.Contracts["diamond"].Address)
+	cutContract := bind.NewBoundContract(diamondAddress, box.Contracts["cut_facet"].ABI,
+		box.Eth.Client, box.Eth.Client, box.Eth.Client)
 
 	return &CutMode{commands: commands, box: box, cutContract: cutContract}
 }
 
-func (c *CutMode) GetCommands() *Command {
+func (c *CutMode) GetCommands() *cli.Command {
 	return c.commands
 }
 
@@ -89,16 +91,16 @@ func (c *CutMode) PrintUsage() {
 	PrintUsage(os.Stdout, c.commands)
 }
 
-func (c *CutMode) Execute(cmd *Command, flags *pflag.FlagSet, params ...interface{}) error {
-	calldata, err := c.box.contracts["diamond_init"].ABI.Pack("init")
+func (c *CutMode) Execute(cmd *cli.Command, flags *pflag.FlagSet, params ...interface{}) error {
+	calldata, err := c.box.Contracts["diamond_init"].ABI.Pack("init")
 	if err != nil {
 		return fmt.Errorf("failed to pack calldata: %v", err)
 	}
 
 	var cut []FacetCut
 	var action uint8
-	var facetAddress AddressFlag
-	var functionSelectors SelectorFlag
+	var facetAddress cli.AddressFlag
+	var functionSelectors cli.SelectorFlag
 
 	if cmd.Name == "add" || cmd.Name == "replace" {
 		addressString, err := flags.GetString("address")
@@ -134,9 +136,9 @@ func (c *CutMode) Execute(cmd *Command, flags *pflag.FlagSet, params ...interfac
 		Action:            action,
 		FunctionSelectors: functionSelectors,
 	})
-	
-	diamondInitAddress := common.HexToAddress(c.box.config.Contracts["diamond_init"].Address)
-	tx, err := c.cutContract.Transact(c.box.eth.auth, "diamondCut", cut,
+
+	diamondInitAddress := common.HexToAddress(c.box.Config.Contracts["diamond_init"].Address)
+	tx, err := c.cutContract.Transact(c.box.Eth.Auth, "diamondCut", cut,
 		diamondInitAddress, calldata)
 	if err != nil {
 		return fmt.Errorf("failed to cut diamond: %v", err)

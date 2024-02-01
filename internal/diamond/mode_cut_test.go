@@ -1,16 +1,17 @@
-package main
+package diamond
 
 import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/nvrmndmnm/godiamond/internal/cli"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
 func TestNewCutMode(t *testing.T) {
-	box, err := setupBox()
+	box, err := SetupBox()
 	if err != nil {
 		t.Fatalf("Failed to create DiamondBox: %v", err)
 	}
@@ -27,7 +28,7 @@ func TestNewCutMode(t *testing.T) {
 }
 
 func TestCutMode_GetCommands(t *testing.T) {
-	box, err := setupBox()
+	box, err := SetupBox()
 	if err != nil {
 		t.Fatalf("Failed to create DiamondBox: %v", err)
 	}
@@ -42,7 +43,7 @@ func TestCutMode_GetCommands(t *testing.T) {
 }
 
 func TestCutMode_Execute(t *testing.T) {
-	box, err := setupBox()
+	box, err := SetupBox()
 	if err != nil {
 		t.Fatalf("Failed to create DiamondBox: %v", err)
 	}
@@ -53,19 +54,19 @@ func TestCutMode_Execute(t *testing.T) {
 		t.Fatalf("Expected type CutMode, got %T", mode)
 	}
 
-	mockContract := setupMockCutContract()
+	mockContract := SetupMockCutContract()
 
 	cutMode.cutContract = mockContract
-	cmd := &Command{Name: "add"}
+	cmd := &cli.Command{Name: "add"}
 	flags := pflag.NewFlagSet("test", pflag.ContinueOnError)
 	flags.String("address", "0xFEEDBABEFEEDBABEFEEDBABEFEEDBABEFEEDBABE", "")
 	flags.String("selectors", "0xbc645d96", "")
 
 	var cut []FacetCut
-	var facetAddress AddressFlag
-	var functionSelectors SelectorFlag
+	var facetAddress cli.AddressFlag
+	var functionSelectors cli.SelectorFlag
 
-	calldata, err := box.contracts["diamond_init"].ABI.Pack("init")
+	calldata, err := box.Contracts["diamond_init"].ABI.Pack("init")
 	assert.Nil(t, err)
 
 	addressString, err := flags.GetString("address")
@@ -88,7 +89,7 @@ func TestCutMode_Execute(t *testing.T) {
 
 	err = cutMode.Execute(cmd, flags)
 
-	diamondInitAddress := common.HexToAddress(box.config.Contracts["diamond_init"].Address)
+	diamondInitAddress := common.HexToAddress(box.Config.Contracts["diamond_init"].Address)
 	mockContract.AssertCalled(t, "Transact", mock.Anything, "diamondCut",
 		cut,
 		diamondInitAddress,
@@ -97,13 +98,13 @@ func TestCutMode_Execute(t *testing.T) {
 }
 
 func TestCutMode_Execute_InvalidAddress(t *testing.T) {
-	box, err := setupBox()
+	box, err := SetupBox()
 	if err != nil {
 		t.Fatalf("Failed to create DiamondBox: %v", err)
 	}
 
 	mode := NewCutMode(box)
-	cmd := &Command{Name: "add"}
+	cmd := &cli.Command{Name: "add"}
 	flags := pflag.NewFlagSet("test", pflag.ContinueOnError)
 	flags.String("address", "invalid", "")
 	flags.String("selectors", "0x00000000", "")
@@ -115,13 +116,13 @@ func TestCutMode_Execute_InvalidAddress(t *testing.T) {
 }
 
 func TestCutMode_Execute_InvalidSelectors(t *testing.T) {
-	box, err := setupBox()
+	box, err := SetupBox()
 	if err != nil {
 		t.Fatalf("Failed to create DiamondBox: %v", err)
 	}
 
 	mode := NewCutMode(box)
-	cmd := &Command{Name: "add"}
+	cmd := &cli.Command{Name: "add"}
 	flags := pflag.NewFlagSet("test", pflag.ContinueOnError)
 	flags.String("address", "0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE", "")
 	flags.String("selectors", "invalid", "")
@@ -133,7 +134,7 @@ func TestCutMode_Execute_InvalidSelectors(t *testing.T) {
 }
 
 func TestCutMode_Execute_FailedToCutDiamond(t *testing.T) {
-	box, err := setupBox()
+	box, err := SetupBox()
 	if err != nil {
 		t.Fatalf("Failed to create DiamondBox: %v", err)
 	}
@@ -144,19 +145,19 @@ func TestCutMode_Execute_FailedToCutDiamond(t *testing.T) {
 		t.Fatalf("Expected type CutMode, got %T", mode)
 	}
 
-	mockContract := setupMockCutContract()
+	mockContract := SetupMockCutContract()
 
 	cutMode.cutContract = mockContract
-	cmd := &Command{Name: "remove"}
+	cmd := &cli.Command{Name: "remove"}
 	flags := pflag.NewFlagSet("test", pflag.ContinueOnError)
 	flags.String("address", "0xFEEDBABEFEEDBABEFEEDBABEFEEDBABEFEEDBABE", "")
 	flags.String("selectors", "0xbc645d96", "")
 
 	var cut []FacetCut
-	var facetAddress AddressFlag
-	var functionSelectors SelectorFlag
+	var facetAddress cli.AddressFlag
+	var functionSelectors cli.SelectorFlag
 
-	calldata, err := box.contracts["diamond_init"].ABI.Pack("init")
+	calldata, err := box.Contracts["diamond_init"].ABI.Pack("init")
 	assert.Nil(t, err)
 
 	addressString, err := flags.GetString("address")
@@ -178,7 +179,7 @@ func TestCutMode_Execute_FailedToCutDiamond(t *testing.T) {
 
 	err = cutMode.Execute(cmd, flags)
 
-	diamondInitAddress := common.HexToAddress(box.config.Contracts["diamond_init"].Address)
+	diamondInitAddress := common.HexToAddress(box.Config.Contracts["diamond_init"].Address)
 	mockContract.AssertCalled(t, "Transact", mock.Anything, "diamondCut",
 		cut,
 		diamondInitAddress,

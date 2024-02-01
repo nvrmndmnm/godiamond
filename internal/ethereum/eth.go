@@ -1,15 +1,11 @@
-package main
+package ethereum
 
 import (
 	"context"
 	"crypto/ecdsa"
-	"fmt"
 	"math/big"
-	"strconv"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -21,9 +17,9 @@ type BoundContract interface {
 }
 
 type EthereumWrapper struct {
-	client  *ethclient.Client
-	auth    *bind.TransactOpts
-	chainId *big.Int
+	Client  *ethclient.Client
+	Auth    *bind.TransactOpts
+	ChainId *big.Int
 }
 
 func (eth *EthereumWrapper) Dial(rawurl string) (*ethclient.Client, error) {
@@ -35,11 +31,11 @@ func (eth *EthereumWrapper) NewKeyedTransactorWithChainID(key *ecdsa.PrivateKey,
 }
 
 func (eth *EthereumWrapper) NetworkID(ctx context.Context) (*big.Int, error) {
-	return eth.client.NetworkID(ctx)
+	return eth.Client.NetworkID(ctx)
 }
 
 func (eth *EthereumWrapper) SuggestGasPrice(ctx context.Context) (*big.Int, error) {
-	return eth.client.SuggestGasPrice(ctx)
+	return eth.Client.SuggestGasPrice(ctx)
 }
 
 func (eth *EthereumWrapper) HexToECDSA(hexkey string) (*ecdsa.PrivateKey, error) {
@@ -47,41 +43,5 @@ func (eth *EthereumWrapper) HexToECDSA(hexkey string) (*ecdsa.PrivateKey, error)
 }
 
 func (eth *EthereumWrapper) Close() {
-	eth.client.Close()
-}
-
-func convertStringParamsToType(strParams []string, types abi.Arguments) ([]interface{}, error) {
-	params := make([]interface{}, len(strParams))
-	var err error
-
-	for i, value := range strParams {
-		switch types[i].Type.T {
-		case abi.AddressTy:
-			if !common.IsHexAddress(value) {
-				return nil, fmt.Errorf("%s is not a valid Ethereum address", value)
-			}
-			params[i] = common.HexToAddress(value)
-
-		case abi.BoolTy:
-			params[i], err = strconv.ParseBool(value)
-			if err != nil {
-				return nil, err
-			}
-
-		case abi.BytesTy:
-			params[i] = []byte(value)
-
-		case abi.IntTy, abi.UintTy:
-			res, ok := new(big.Int).SetString(value, 0)
-			if !ok {
-				return nil, fmt.Errorf("failed to convert to big.Int: %s", value)
-			}
-			params[i] = res
-
-		case abi.StringTy:
-			params[i] = value
-		}
-	}
-
-	return params, nil
+	eth.Client.Close()
 }

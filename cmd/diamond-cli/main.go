@@ -6,6 +6,8 @@ import (
 	"math/big"
 	"os"
 
+	"github.com/nvrmndmnm/godiamond/internal/config"
+	"github.com/nvrmndmnm/godiamond/internal/diamond"
 	"github.com/spf13/pflag"
 	"go.uber.org/zap"
 )
@@ -62,12 +64,12 @@ func main() {
 	sugar := logger.Sugar()
 	defer logger.Sync()
 
-	config, err := loadConfig(args.ValueConfig)
+	config, err := config.LoadConfig(args.ValueConfig)
 	if err != nil {
 		sugar.Fatalf("failed to load config: %v", err)
 	}
 
-	if err := config.validateStandardContracts(); err != nil {
+	if err := config.ValidateStandardContracts(); err != nil {
 		sugar.Fatalf("failed to validate config: %v", err)
 	}
 
@@ -96,12 +98,12 @@ func main() {
 	chainId := new(big.Int)
 	chainId.SetInt64(args.ValueChainID)
 
-	box, err := NewDiamondBox(config, sugar, mode, args.ValueRPC, chainId)
+	box, err := diamond.NewDiamondBox(config, sugar, mode, args.ValueRPC, chainId)
 	if err != nil {
 		sugar.Fatalf("couldn't fill the box with treasures: %v", err)
 	}
 
 	defer box.Close()
 
-	box.run()
+	box.Run()
 }

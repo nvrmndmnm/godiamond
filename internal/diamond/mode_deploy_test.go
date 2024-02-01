@@ -1,4 +1,4 @@
-package main
+package diamond
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 )
 
 func TestNewDeployMode(t *testing.T) {
-	box, err := setupBox()
+	box, err := SetupBox()
 	if err != nil {
 		t.Fatalf("Failed to create DiamondBox: %v", err)
 	}
@@ -23,7 +23,7 @@ func TestNewDeployMode(t *testing.T) {
 	assert.Equal(t, "deploy", deployMode.commands.Name)
 }
 func TestDeployMode_GetCommands(t *testing.T) {
-	box, err := setupBox()
+	box, err := SetupBox()
 	if err != nil {
 		t.Fatalf("Failed to create DiamondBox: %v", err)
 	}
@@ -38,7 +38,7 @@ func TestDeployMode_GetCommands(t *testing.T) {
 }
 
 func TestDeployMode_Execute(t *testing.T) {
-	box, err := setupBox()
+	box, err := SetupBox()
 	if err != nil {
 		t.Fatalf("Failed to create DiamondBox: %v", err)
 	}
