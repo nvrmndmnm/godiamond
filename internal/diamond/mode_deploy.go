@@ -6,8 +6,6 @@ import (
 	"strings"
 
 	"github.com/nvrmndmnm/godiamond/internal/cli"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/spf13/pflag"
 )
 
@@ -99,7 +97,8 @@ func (d *DeployMode) Execute(cmd *cli.Command, flags *pflag.FlagSet, modeParams 
 		}
 		deployments = append(deployments, loupeFacet)
 
-		if err = d.box.cutLoupeFacet(cutFacet.Address, loupeFacet.Address); err != nil {
+		if err = d.box.initCutLoupeFacet(diamond.Address, diamondInit.Address,
+			cutFacet.Address, loupeFacet.Address); err != nil {
 			return fmt.Errorf("failed to cut loupe facet: %v", err)
 		}
 
@@ -160,40 +159,5 @@ func (d *DeployMode) Execute(cmd *cli.Command, flags *pflag.FlagSet, modeParams 
 	if err := writeDeploymentDataToFile(deployments); err != nil {
 		return fmt.Errorf("failed to write deployment data: %v", err)
 	}
-	return nil
-}
-
-func (box *DiamondBox) cutLoupeFacet(cutFacetAddress, loupeFacetAddress common.Address) error {
-	diamondAddress := common.HexToAddress(box.Config.Contracts["diamond"].Address)
-	cutContract := bind.NewBoundContract(diamondAddress, box.Contracts["cut_facet"].ABI,
-		box.Eth.Client, box.Eth.Client, box.Eth.Client)
-
-	calldata, err := box.Contracts["diamond_init"].ABI.Pack("init")
-	if err != nil {
-		return err
-	}
-
-	loupeMethodIdentifiers := box.Contracts["loupe_facet"].MethodIdentifiers
-	var loupeSelectors cli.SelectorFlag
-
-	for _, selector := range loupeMethodIdentifiers {
-		if err := loupeSelectors.Set(selector); err != nil {
-			return err
-		}
-	}
-
-	var cut []FacetCut
-	cut = append(cut, FacetCut{
-		FacetAddress:      loupeFacetAddress,
-		Action:            Add,
-		FunctionSelectors: loupeSelectors,
-	})
-
-	_, err = cutContract.Transact(box.Eth.Auth, "diamondCut", cut,
-		box.Config.Contracts["diamond_init"].Address, calldata)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
