@@ -6,10 +6,11 @@ import (
 	"os"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/nvrmndmnm/godiamond/internal/cli"
-	"github.com/nvrmndmnm/godiamond/internal/ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/nvrmndmnm/godiamond/internal/cli"
+	"github.com/nvrmndmnm/godiamond/internal/ethereum"
 	"github.com/spf13/pflag"
 )
 
@@ -175,8 +176,8 @@ func (l *LoupeMode) getFacetsOutput() (string, error) {
 	facets := *abi.ConvertType(callResult[0], new([]LoupeFacet)).(*[]LoupeFacet)
 
 	for _, facet := range facets {
-		contractMetadata, _ := l.box.getContractMetadataByAddress(facet.FacetAddress)
-		selectorsMetadata := getFunctionIdentifiersBySelectors(facet.FunctionSelectors, contractMetadata)
+		// contractMetadata, _ := l.box.getContractMetadataByAddress(facet.FacetAddress)
+		selectorsMetadata := l.getFunctionIdentifiersBySelectors(facet.FunctionSelectors)
 
 		output += fmt.Sprintf("facet address: %v\n", facet.FacetAddress)
 
@@ -215,8 +216,7 @@ func (l *LoupeMode) getFacetSelectorsOutput(facetAddress cli.AddressFlag) (strin
 
 	facetSelectors := *abi.ConvertType(callResult[0], new([][4]byte)).(*[][4]byte)
 
-	contractMetadata, _ := l.box.getContractMetadataByAddress(common.Address(facetAddress))
-	selectorsMetadata := getFunctionIdentifiersBySelectors(facetSelectors, contractMetadata)
+	selectorsMetadata := l.getFunctionIdentifiersBySelectors(facetSelectors)
 
 	for selector, functionName := range selectorsMetadata {
 		output += fmt.Sprintf("\t%s: %s\n", selector, functionName)
@@ -264,4 +264,29 @@ func (l *LoupeMode) getSupportsInterfaceOutput(interfaceId cli.SelectorFlag) (st
 
 	output = fmt.Sprintf("ERC-165 status: %v\n", status)
 	return output, nil
+}
+
+func (l *LoupeMode) getFunctionIdentifiersBySelectors(selectors [][4]byte) map[string]string {
+	selectorsMetadata := make(map[string]string)
+
+	for _, selector := range selectors {
+		selectorString := hexutil.Encode(selector[:])
+
+		l.findMatchingIdentifier(selectorString, selectorsMetadata)
+	}
+
+	return selectorsMetadata
+}
+
+func (l *LoupeMode) findMatchingIdentifier(selectorString string, selectorsMetadata map[string]string) {
+	for id := range l.box.Config.Contracts {
+		contractMetadata := l.box.Contracts[id]
+
+		for identifier, selectorValue := range contractMetadata.MethodIdentifiers {
+			if selectorString[2:] == selectorValue {
+				selectorsMetadata[selectorString] = identifier
+				break
+			}
+		}
+	}
 }

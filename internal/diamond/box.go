@@ -10,8 +10,6 @@ import (
 
 	"github.com/c-bata/go-prompt"
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/nvrmndmnm/godiamond/internal/cli"
 	"github.com/nvrmndmnm/godiamond/internal/config"
 	"github.com/nvrmndmnm/godiamond/internal/ethereum"
@@ -171,18 +169,6 @@ func (box *DiamondBox) Close() {
 	box.Eth.Close()
 }
 
-func (box *DiamondBox) getContractMetadataByAddress(address common.Address) (*ContractMetadata, error) {
-	for id, contract := range box.Config.Contracts {
-		if common.HexToAddress(contract.Address) == address {
-			contractMetadata := box.Contracts[id]
-
-			return &contractMetadata, nil
-		}
-	}
-
-	return nil, fmt.Errorf("contract address not found in config")
-}
-
 func GetContractMetadataByFile(path string) (ContractMetadata, error) {
 	var contractMetadata ContractMetadata
 
@@ -197,25 +183,4 @@ func GetContractMetadataByFile(path string) (ContractMetadata, error) {
 		return ContractMetadata{}, fmt.Errorf("failed to unmarshal metadata file: %v", err)
 	}
 	return contractMetadata, nil
-}
-
-func getFunctionIdentifiersBySelectors(selectors [][4]byte, contractMetadata *ContractMetadata) map[string]string {
-	selectorsMetadata := make(map[string]string)
-
-	for _, selector := range selectors {
-		selectorString := hexutil.Encode(selector[:])
-		functionName := "Function name not specified"
-
-		if contractMetadata != nil {
-			for identifier, selectorValue := range contractMetadata.MethodIdentifiers {
-				if selectorString[2:] == selectorValue {
-					functionName = identifier
-					break
-				}
-			}
-		}
-		selectorsMetadata[selectorString] = functionName
-	}
-
-	return selectorsMetadata
 }
