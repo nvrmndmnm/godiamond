@@ -65,15 +65,9 @@ func (box *DiamondBox) deployContract(contractMetadata ContractMetadata, strPara
 	return deploymentData, nil
 }
 
-func (box *DiamondBox) initCutLoupeFacet(diamondAddress, diamondInitAddress,
-	cutFacetAddress, loupeFacetAddress common.Address) error {
+func (box *DiamondBox) initCutLoupeFacet(diamondAddress, loupeFacetAddress common.Address) error {
 	cutContract := bind.NewBoundContract(diamondAddress, box.Contracts["cut_facet"].ABI,
 		box.Eth.Client, box.Eth.Client, box.Eth.Client)
-
-	calldata, err := box.Contracts["diamond_init"].ABI.Pack("init")
-	if err != nil {
-		return err
-	}
 
 	loupeMethodIdentifiers := box.Contracts["loupe_facet"].MethodIdentifiers
 	var loupeSelectors cli.SelectorFlag
@@ -91,7 +85,7 @@ func (box *DiamondBox) initCutLoupeFacet(diamondAddress, diamondInitAddress,
 		FunctionSelectors: loupeSelectors,
 	})
 
-	_, err = cutContract.Transact(box.Eth.Auth, "diamondCut", cut, diamondInitAddress, calldata)
+	_, err := cutContract.Transact(box.Eth.Auth, "diamondCut", cut, common.Address{}, []byte{})
 	if err != nil {
 		return err
 	}

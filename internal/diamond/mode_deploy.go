@@ -97,8 +97,7 @@ func (d *DeployMode) Execute(cmd *cli.Command, flags *pflag.FlagSet, modeParams 
 		}
 		deployments = append(deployments, loupeFacet)
 
-		if err = d.box.initCutLoupeFacet(diamond.Address, diamondInit.Address,
-			cutFacet.Address, loupeFacet.Address); err != nil {
+		if err = d.box.initCutLoupeFacet(diamond.Address, loupeFacet.Address); err != nil {
 			return fmt.Errorf("failed to cut loupe facet: %v", err)
 		}
 
