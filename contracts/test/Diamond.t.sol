@@ -15,8 +15,6 @@ import "../src/upgradeInitializers/DiamondInit.sol";
 import "../src/interfaces/IDiamondCut.sol";
 
 contract DiamondTest is Test {
-    uint mainnetFork;
-
     Diamond diamond;
     DiamondInit diamondInit;
     DiamondCutFacet diamondCutFacet;
@@ -25,7 +23,6 @@ contract DiamondTest is Test {
     Test1Facet test1Facet;
     Test2Facet test2Facet;
 
-    address[] facetAddresses;
     mapping(address => bytes4[]) testSelectors;
 
     using stdJson for string;
@@ -81,13 +78,12 @@ contract DiamondTest is Test {
             bytes4(hex"f2fde38b"),
             bytes4(hex"8da5cb5b")
         ];
-
-        // vm.stopBroadcast();
     }
 
     // 1 'should have three facets -- call to facetAddresses function'
     function testThreeFacets() public {
-        facetAddresses = IDiamondLoupe(address(diamond)).facetAddresses();
+        address[] memory facetAddresses = IDiamondLoupe(address(diamond))
+            .facetAddresses();
         assertEq(facetAddresses.length, 3);
     }
 
@@ -95,6 +91,7 @@ contract DiamondTest is Test {
     function testFacetFunctionSelectors() public {
         bytes4[] memory selectors = IDiamondLoupe(address(diamond))
             .facetFunctionSelectors(address(diamondCutFacet));
+
         assertEq(
             testSelectors[address(diamondCutFacet)].length,
             selectors.length
@@ -143,42 +140,257 @@ contract DiamondTest is Test {
     // 4 'should add test1 functions'
     function testAddTest1Functions() public {
         bytes4[] memory functionSelectors = new bytes4[](1);
-
         functionSelectors[0] = Test1Facet.test1Func1.selector;
+
         IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
         cut[0] = IDiamondCut.FacetCut({
             facetAddress: address(test1Facet),
             action: IDiamondCut.FacetCutAction.Add,
             functionSelectors: functionSelectors
         });
+
         IDiamondCut(address(diamond)).diamondCut(cut, address(0), "");
-        bytes4[] memory selectors = IDiamondLoupe(address(diamond)).facetFunctionSelectors(
-            address(test1Facet)
-        );
+        bytes4[] memory selectors = IDiamondLoupe(address(diamond))
+            .facetFunctionSelectors(address(test1Facet));
+
         assertEq(functionSelectors[0], selectors[0]);
     }
 
     // 5 'should test function call'
-    function testFunctionCall() public {}
+    function testFunctionCall() public {
+        bytes4[] memory functionSelectors = new bytes4[](1);
+        functionSelectors[0] = Test1Facet.test1Func1.selector;
+
+        IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
+        cut[0] = IDiamondCut.FacetCut({
+            facetAddress: address(test1Facet),
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: functionSelectors
+        });
+
+        IDiamondCut(address(diamond)).diamondCut(cut, address(0), "");
+        Test1Facet(address(diamond)).test1Func1();
+    }
 
     // 6 'should replace supportsInterface function'
-    function testReplaceSupportsInterfaceFunction() public {}
+    function testReplaceSupportsInterfaceFunction() public {
+        bytes4[] memory functionSelectors = new bytes4[](1);
+        functionSelectors[0] = Test1Facet.supportsInterface.selector;
 
-    // 7 'should add test2 functions'
-    function testAddTest2Functions() public {}
+        IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
+        cut[0] = IDiamondCut.FacetCut({
+            facetAddress: address(test1Facet),
+            action: IDiamondCut.FacetCutAction.Replace,
+            functionSelectors: functionSelectors
+        });
 
-    // 8 'should remove some test2 functions'
-    function testRemoveSomeTest2Functions() public {}
+        IDiamondCut(address(diamond)).diamondCut(cut, address(0), "");
+        bytes4[] memory selectors = IDiamondLoupe(address(diamond))
+            .facetFunctionSelectors(address(test1Facet));
 
-    // 9 'should remove some test1 functions'
-    function testRemoveSomeTest1Functions() public {}
+        assertEq(functionSelectors[0], selectors[0]);
+    }
 
-    // 10 'remove all functions and facets except \'diamondCut\' and \'facets\''
-    function testRemoveAllExceptDiamondCutAndFacets() public {}
+    // 7 'should add and remove some test2 functions'
+    function testAddAndRemoveSomeTest2Functions() public {
+        bytes4[] memory functionSelectors = new bytes4[](1);
+        functionSelectors[0] = Test2Facet.test2Func1.selector;
 
-    // 11 'add most functions and facets'
-    function testAddMostFunctionsAndFacets() public {}
+        IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
+        cut[0] = IDiamondCut.FacetCut({
+            facetAddress: address(test2Facet),
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: functionSelectors
+        });
 
+        IDiamondCut(address(diamond)).diamondCut(cut, address(0), "");
+        bytes4[] memory selectors = IDiamondLoupe(address(diamond))
+            .facetFunctionSelectors(address(test2Facet));
+
+        assertEq(functionSelectors[0], selectors[0]);
+
+        cut[0] = IDiamondCut.FacetCut({
+            facetAddress: address(0),
+            action: IDiamondCut.FacetCutAction.Remove,
+            functionSelectors: functionSelectors
+        });
+
+        IDiamondCut(address(diamond)).diamondCut(cut, address(0), "");
+        selectors = IDiamondLoupe(address(diamond)).facetFunctionSelectors(
+            address(test2Facet)
+        );
+
+        assertEq(selectors.length, 0);
+    }
+
+    // 8 'should remove some test1 functions'
+    function testRemoveSomeTest1Functions() public {
+        bytes4[] memory functionSelectors = new bytes4[](4);
+        functionSelectors[0] = Test1Facet.test1Func1.selector;
+        functionSelectors[1] = Test1Facet.test1Func2.selector;
+        functionSelectors[2] = Test1Facet.test1Func3.selector;
+        functionSelectors[3] = Test1Facet.test1Func4.selector;
+
+        IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
+        cut[0] = IDiamondCut.FacetCut({
+            facetAddress: address(test1Facet),
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: functionSelectors
+        });
+
+        IDiamondCut(address(diamond)).diamondCut(cut, address(0), "");
+        bytes4[] memory selectors = IDiamondLoupe(address(diamond))
+            .facetFunctionSelectors(address(test1Facet));
+
+        assertEq(functionSelectors[0], selectors[0]);
+        assertEq(functionSelectors[1], selectors[1]);
+        assertEq(functionSelectors[2], selectors[2]);
+        assertEq(functionSelectors[3], selectors[3]);
+
+        bytes4[] memory selectorsToRemove = new bytes4[](2);
+        selectorsToRemove[0] = Test1Facet.test1Func2.selector;
+        selectorsToRemove[1] = Test1Facet.test1Func4.selector;
+
+        cut[0] = IDiamondCut.FacetCut({
+            facetAddress: address(0),
+            action: IDiamondCut.FacetCutAction.Remove,
+            functionSelectors: selectorsToRemove
+        });
+
+        IDiamondCut(address(diamond)).diamondCut(cut, address(0), "");
+        selectors = IDiamondLoupe(address(diamond)).facetFunctionSelectors(
+            address(test1Facet)
+        );
+
+        assertEq(functionSelectors[0], selectors[0]);
+        assertEq(functionSelectors[2], selectors[1]);
+    }
+
+    // 9 'remove all functions and facets except \'diamondCut\' and \'facets\''
+    function testRemoveAllExceptDiamondCutAndFacets() public {
+        IDiamondLoupe.Facet[] memory facets = IDiamondLoupe(address(diamond))
+            .facets();
+        bytes4[] memory selectorsToRemove = new bytes4[](6);
+        uint index = 0;
+
+        for (uint i = 0; i < facets.length; i++) {
+            for (uint j = 0; j < facets[i].functionSelectors.length; j++) {
+                if (
+                    facets[i].functionSelectors[j] !=
+                    DiamondCutFacet.diamondCut.selector &&
+                    facets[i].functionSelectors[j] !=
+                    DiamondLoupeFacet.facets.selector
+                ) {
+                    selectorsToRemove[index] = facets[i].functionSelectors[j];
+                    index++;
+                }
+            }
+        }
+
+        IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
+        cut[0] = IDiamondCut.FacetCut({
+            facetAddress: address(0),
+            action: IDiamondCut.FacetCutAction.Remove,
+            functionSelectors: selectorsToRemove
+        });
+
+        IDiamondCut(address(diamond)).diamondCut(cut, address(0), "");
+        facets = IDiamondLoupe(address(diamond)).facets();
+
+        assertEq(facets.length, 2);
+        assertEq(facets[0].facetAddress, address(diamondCutFacet));
+        assertEq(
+            facets[0].functionSelectors[0],
+            DiamondCutFacet.diamondCut.selector
+        );
+        assertEq(facets[1].facetAddress, address(diamondLoupeFacet));
+        assertEq(
+            facets[1].functionSelectors[0],
+            DiamondLoupeFacet.facets.selector
+        );
+    }
+
+    // 10 'add most functions and facets'
+    // Any number of functions from any number of facets can be added/replaced/removed in a
+    // single transaction
+    function testAddMostFunctionsAndFacets() public {
+        // reset previous state
+        vm.stopBroadcast();
+        diamondCutFacet = new DiamondCutFacet();
+        diamondLoupeFacet = new DiamondLoupeFacet();
+        ownershipFacet = new OwnershipFacet();
+        test1Facet = new Test1Facet();
+        test2Facet = new Test2Facet();
+        diamond = new Diamond(address(this), address(diamondCutFacet));
+
+        IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](4);
+
+        bytes4[] memory functionSelectors = new bytes4[](2);
+        functionSelectors[0] = IDiamondLoupe.facets.selector;
+        functionSelectors[1] = IDiamondLoupe.facetAddresses.selector;
+
+        cut[0] = IDiamondCut.FacetCut({
+            facetAddress: address(diamondLoupeFacet),
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: functionSelectors
+        });
+
+        functionSelectors = new bytes4[](2);
+        functionSelectors[0] = OwnershipFacet.transferOwnership.selector;
+        functionSelectors[1] = OwnershipFacet.owner.selector;
+
+        cut[1] = IDiamondCut.FacetCut({
+            facetAddress: address(ownershipFacet),
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: functionSelectors
+        });
+
+        functionSelectors = new bytes4[](3);
+        functionSelectors[0] = Test1Facet.test1Func1.selector;
+        functionSelectors[1] = Test1Facet.test1Func5.selector;
+        functionSelectors[2] = Test1Facet.test1Func15.selector;
+
+        cut[2] = IDiamondCut.FacetCut({
+            facetAddress: address(test1Facet),
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: functionSelectors
+        });
+
+        functionSelectors = new bytes4[](4);
+        functionSelectors[0] = Test2Facet.test2Func1.selector;
+        functionSelectors[1] = Test2Facet.test2Func11.selector;
+        functionSelectors[2] = Test2Facet.test2Func12.selector;
+        functionSelectors[3] = Test2Facet.test2Func13.selector;
+
+        cut[3] = IDiamondCut.FacetCut({
+            facetAddress: address(test2Facet),
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: functionSelectors
+        });
+
+        IDiamondCut(address(diamond)).diamondCut(cut, address(0), "");
+        IDiamondLoupe.Facet[] memory facets = IDiamondLoupe(address(diamond))
+            .facets();
+        address[] memory facetAddresses = IDiamondLoupe(address(diamond))
+            .facetAddresses();
+
+        assertEq(facets.length, 5);
+        assertEq(facetAddresses.length, 5);
+
+        assertEq(facets[0].facetAddress, facetAddresses[0]);
+        assertEq(facets[1].facetAddress, facetAddresses[1]);
+        assertEq(facets[2].facetAddress, facetAddresses[2]);
+        assertEq(facets[3].facetAddress, facetAddresses[3]);
+        assertEq(facets[4].facetAddress, facetAddresses[4]);
+
+        assertEq(facets[0].functionSelectors[0], IDiamondCut.diamondCut.selector);
+        assertEq(facets[1].functionSelectors[0], IDiamondLoupe.facets.selector);
+        assertEq(facets[2].functionSelectors[0], OwnershipFacet.transferOwnership.selector);
+        assertEq(facets[3].functionSelectors[0], Test1Facet.test1Func1.selector);
+        assertEq(facets[4].functionSelectors[0], Test2Facet.test2Func1.selector);
+    }
+
+    // TODO: Figure out how to parse ABIs to reflect all functions instead of hardcoded ones
     function getSelectors(
         string memory contractName
     ) internal returns (bytes4[] memory) {
@@ -203,13 +415,12 @@ contract DiamondTest is Test {
             methodIdentifiers,
             (string[])
         );
-        
+
         bytes4[] memory selectors = new bytes4[](decodedSelectors.length);
         for (uint i = 0; i < decodedSelectors.length; i++) {
             bytes memory temp = abi.encodePacked(decodedSelectors[i]);
             selectors[i] = bytes4(temp);
         }
-        console.log(vm.toString(selectors[1]));
 
         return selectors;
     }
