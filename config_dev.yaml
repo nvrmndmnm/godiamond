@@ -14,11 +14,10 @@ contracts:
     address: "0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE"
     metadata: "./contracts/out/Diamond.sol/Diamond.json"
   diamond_init:
-    address: "0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE"
     metadata: "./contracts/out/DiamondInit.sol/DiamondInit.json"
   cut_facet:
-    address: "0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE"
     metadata: "./contracts/out/DiamondCutFacet.sol/DiamondCutFacet.json"
   loupe_facet:
-    address: "0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE"
     metadata: "./contracts/out/DiamondLoupeFacet.sol/DiamondLoupeFacet.json"
+  test:
+    metadata: "./contracts/out/Test1Facet.sol/Test1Facet.json"
