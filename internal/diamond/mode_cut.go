@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/nvrmndmnm/godiamond/internal/cli"
-	"github.com/nvrmndmnm/godiamond/internal/ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/nvrmndmnm/godiamond/internal/cli"
+	"github.com/nvrmndmnm/godiamond/internal/ethereum"
 	"github.com/spf13/pflag"
 )
 
@@ -92,11 +92,6 @@ func (c *CutMode) PrintUsage() {
 }
 
 func (c *CutMode) Execute(cmd *cli.Command, flags *pflag.FlagSet, params ...interface{}) error {
-	calldata, err := c.box.Contracts["diamond_init"].ABI.Pack("init")
-	if err != nil {
-		return fmt.Errorf("failed to pack calldata: %v", err)
-	}
-
 	var cut []FacetCut
 	var action uint8
 	var facetAddress cli.AddressFlag
@@ -137,9 +132,8 @@ func (c *CutMode) Execute(cmd *cli.Command, flags *pflag.FlagSet, params ...inte
 		FunctionSelectors: functionSelectors,
 	})
 
-	diamondInitAddress := common.HexToAddress(c.box.Config.Contracts["diamond_init"].Address)
 	tx, err := c.cutContract.Transact(c.box.Eth.Auth, "diamondCut", cut,
-		diamondInitAddress, calldata)
+		common.Address{}, []byte{})
 	if err != nil {
 		return fmt.Errorf("failed to cut diamond: %v", err)
 	}

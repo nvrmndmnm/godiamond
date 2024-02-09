@@ -66,9 +66,6 @@ func TestCutMode_Execute(t *testing.T) {
 	var facetAddress cli.AddressFlag
 	var functionSelectors cli.SelectorFlag
 
-	calldata, err := box.Contracts["diamond_init"].ABI.Pack("init")
-	assert.Nil(t, err)
-
 	addressString, err := flags.GetString("address")
 	assert.Nil(t, err)
 
@@ -89,11 +86,10 @@ func TestCutMode_Execute(t *testing.T) {
 
 	err = cutMode.Execute(cmd, flags)
 
-	diamondInitAddress := common.HexToAddress(box.Config.Contracts["diamond_init"].Address)
 	mockContract.AssertCalled(t, "Transact", mock.Anything, "diamondCut",
 		cut,
-		diamondInitAddress,
-		calldata)
+		common.Address{},
+		[]byte{})
 	assert.Nil(t, err)
 }
 
@@ -157,9 +153,6 @@ func TestCutMode_Execute_FailedToCutDiamond(t *testing.T) {
 	var facetAddress cli.AddressFlag
 	var functionSelectors cli.SelectorFlag
 
-	calldata, err := box.Contracts["diamond_init"].ABI.Pack("init")
-	assert.Nil(t, err)
-
 	addressString, err := flags.GetString("address")
 	assert.Nil(t, err)
 
@@ -179,11 +172,10 @@ func TestCutMode_Execute_FailedToCutDiamond(t *testing.T) {
 
 	err = cutMode.Execute(cmd, flags)
 
-	diamondInitAddress := common.HexToAddress(box.Config.Contracts["diamond_init"].Address)
 	mockContract.AssertCalled(t, "Transact", mock.Anything, "diamondCut",
 		cut,
-		diamondInitAddress,
-		calldata)
+		common.Address{},
+		[]byte{})
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "failed to cut diamond")
 }

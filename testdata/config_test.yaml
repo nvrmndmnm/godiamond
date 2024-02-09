@@ -9,14 +9,10 @@ contracts:
     address: "0xABADBABEABADBABEABADBABEABADBABEABADBABE"
     metadata: "../../testdata/TestDiamond.json"
   diamond_init:
-    address: "0xB055BABEB055BABEB055BABEB055BABEB055BABE"
     metadata: "../../testdata/TestDiamondInit.json"
   cut_facet:
-    address: "0xCA11BABECA11BABECA11BABECA11BABECA11BABE"
     metadata: "../../testdata/TestDiamondCutFacet.json"
   loupe_facet:
-    address: "0xD011BABED011BABED011BABED011BABED011BABE"
     metadata: "../../testdata/TestDiamondLoupeFacet.json"
   test:
-    address: "0xFEEDBABEFEEDBABEFEEDBABEFEEDBABEFEEDBABE"
     metadata: "../../testdata/TestContract.json"

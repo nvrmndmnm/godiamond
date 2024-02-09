@@ -88,8 +88,6 @@ func SetupMockCutContract() *MockBoundContract {
 		FunctionSelectors: functionSelectors,
 	}}
 
-	diamondInitAddress := common.HexToAddress("0xB055BABEB055BABEB055BABEB055BABEB055BABE")
-	expectedCalldata := []byte{225, 199, 57, 42}
 	tx := types.NewTransaction(0, common.Address{}, big.NewInt(0), 0, big.NewInt(0), nil)
 
 	mockContract.On(
@@ -97,8 +95,8 @@ func SetupMockCutContract() *MockBoundContract {
 		mock.Anything,
 		"diamondCut",
 		expectedCut,
-		diamondInitAddress,
-		expectedCalldata).
+		common.Address{},
+		[]byte{}).
 		Return(tx, nil)
 
 	mockContract.On(
@@ -106,8 +104,8 @@ func SetupMockCutContract() *MockBoundContract {
 		mock.Anything,
 		"diamondCut",
 		expectedErrCut,
-		diamondInitAddress,
-		expectedCalldata).
+		common.Address{},
+		[]byte{}).
 		Return(tx, errors.New("failed test"))
 
 	return mockContract
