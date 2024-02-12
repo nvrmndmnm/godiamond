@@ -39,7 +39,7 @@ func NewDeployMode(box *DiamondBox) Mode {
 			},
 			{
 				Name:        "by-file",
-				Description: "Deploy a contract by specified file path",
+				Description: "Deploy a contract by specified metadata file path",
 				SubCommands: []*cli.Command{
 					{
 						Name:        "path",

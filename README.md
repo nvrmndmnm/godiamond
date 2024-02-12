@@ -38,10 +38,10 @@ Usage:
     diamond-cli cut [options]
     diamond-cli loupe [options]
 
-Options:
-    --rpc <name>          string    RPC identifier
-    --chain-id <id>       int       Chain ID (default: 0)
-    -c --config <path>    string    Load config file (default: "config.yaml")
+Arguments:
+    --rpc <name>                    RPC identifier
+    --chain-id <id>                 Chain ID (default: 0)
+    -c --config <path>              Load config file (default: "config.yaml")
     -d --debug                      Enable debug mode (default: disabled)
     -h --help                       Show help
 ```
@@ -49,16 +49,16 @@ Options:
 **Deploy**
 ```
 Commands:
-    diamond <owner>                        Deploy a new diamond
-    facet <metadata> <constructor-args>    Deploy a facet to use in an existing diamond
-    init                                   Deploy initial set of contracts specified by the standard 
-    help                                   Show help
-    exit                                   Exit the deploy mode
+    init                                  Deploy and initialize mandatory Diamond standard contracts
+    by-config-id <id> <constructor-args>  Deploy a contract by ID specified in config file
+    by-file <path> <constructor-args>     Deploy a contract by specified metadata file path
+    help                                  Show help message
+    exit                                  Exit the interactive mode
 
 Arguments:
-    --owner              string    Ethereum address of the diamond owner
-	--metadata           string    Path to contract metadata file
-	--constructor-args   string    Comma-separated list of constructor arguments
+    --id                                  ID of the contract in config file
+    --constructor-args                    Comma-separated constructor arguments
+    --path                                Path to the contract metadata file
 ```
 **Cut**
 ```
@@ -66,26 +66,28 @@ Commands:
     add <address> <selectors>      Add a new facet with specified function selectors
     replace <address> <selectors>  Replace selectors of an existing facet
     remove <selectors>             Remove selectors from the diamond
-    help                           Show help
-    exit                           Exit the cut mode
+    help                           Show help message
+    exit                           Exit the interactive mode
 
 Arguments:
-    --address     string    Ethereum address of the facet
-    --selectors   string    Comma-separated list of 4-byte function selectors
+    --address                      Ethereum address of a facet
+    --selectors                    Comma-separated function selectors
 ```
 **Loupe**
 ```
 Commands:
-    facets                        Show all facets and their selectors
-    addresses                     Show all facet addresses used by a diamond
-    facet-selectors <address>     Show all function selectors provided by a facet
-    facet-address <selector>      Show the facet that supports the given selector
-    help                          Show help
-    exit                          Exit the loupe mode
+    facets                     Show all facets and their selectors
+    addresses                  Show all facet addresses used by a diamond
+    facet-selectors <address>  Show all function selectors provided by a facet
+    facet-address <selector>   Show the facet that supports the given selector
+    supports-interface <id>    Show if the contract implements an interface
+    help                       Show help message
+    exit                       Exit the interactive mode
 
 Arguments:
-    --address           string    Ethereum address of the facet
-    --selector          string    4-byte function selector representation 
+    --address                  Ethereum address of a facet
+    --selector                 Function selector
+    --id                       Interface identifier 
 ```
 
 ## Examples
@@ -103,9 +105,7 @@ forge test
 ```
 
 
-## Disclaimer
-The project is under active development at the moment. Feedback and contributions are welcome.
-
+## About
 For more information on Diamonds refer to [Awesome Diamonds](https://github.com/mudgen/awesome-diamonds).  
 Big props to [Nick Mudge](https://github.com/mudgen/) for such a beautiful idea and implementation.
 
