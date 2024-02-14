@@ -1,7 +1,6 @@
 .vscode
 .env
 
-/assets/
 /out/
 /contracts/broadcast
 /contracts/cache

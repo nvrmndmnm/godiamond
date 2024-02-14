@@ -105,6 +105,16 @@ Arguments:
 
 ## Examples
 
+**Deploy – init:**
+
+![deploy – init](assets/deploy.gif)
+
+**Loupe – facets:**
+
+![loupe – facets](assets/loupe.gif)
+
+
+
 ## Testing
 
 Run Go tests:
