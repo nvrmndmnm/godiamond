@@ -52,8 +52,8 @@ func NewDiamondBox(config config.Config,
 		Contracts: make(map[string]ContractMetadata),
 	}
 
-	for contractIdentifier, contractConfig := range config.Contracts {
-		contractMetadata, err := GetContractMetadataByFile(contractConfig.MetadataFilePath)
+	for contractIdentifier, metadataPath := range config.Metadata {
+		contractMetadata, err := GetContractMetadataByFile(metadataPath)
 		if err != nil {
 			return nil, err
 		}
@@ -74,7 +74,7 @@ func NewDiamondBox(config config.Config,
 		}
 	}
 
-	privateKey, err := box.Eth.HexToECDSA(config.Accounts["anvil"].PrivateKey[2:])
+	privateKey, err := box.Eth.HexToECDSA(config.PrivateKey[2:])
 	if err != nil {
 		return nil, err
 	}

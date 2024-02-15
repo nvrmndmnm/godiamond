@@ -1,23 +1,15 @@
-eoa:
-  global:
-    private_key: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-    address: "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
-  anvil:
-    private_key: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-    address: "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
+private_key: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+
 rpc:
   "local": "http://localhost:8545"
   "alchemy": "https"
   "goerli": "https"
-contracts:
-  diamond: 
-    address: "0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE"
-    metadata: "./contracts/out/Diamond.sol/Diamond.json"
-  diamond_init:
-    metadata: "./contracts/out/DiamondInit.sol/DiamondInit.json"
-  cut_facet:
-    metadata: "./contracts/out/DiamondCutFacet.sol/DiamondCutFacet.json"
-  loupe_facet:
-    metadata: "./contracts/out/DiamondLoupeFacet.sol/DiamondLoupeFacet.json"
-  test:
-    metadata: "./contracts/out/Test1Facet.sol/Test1Facet.json"
+
+metadata:
+  diamond: "./contracts/out/Diamond.sol/Diamond.json"
+  diamond_init: "./contracts/out/DiamondInit.sol/DiamondInit.json"
+  cut_facet: "./contracts/out/DiamondCutFacet.sol/DiamondCutFacet.json"
+  loupe_facet: "./contracts/out/DiamondLoupeFacet.sol/DiamondLoupeFacet.json"
+  test: "./contracts/out/Test1Facet.sol/Test1Facet.json"
+
+diamond_address: "0xCAFEBABECAFEBABECAFEBABECAFEBABECAFEBABE"

@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/nvrmndmnm/godiamond/internal/cli"
 	"github.com/spf13/pflag"
 )
@@ -78,7 +79,12 @@ func (d *DeployMode) Execute(cmd *cli.Command, flags *pflag.FlagSet, modeParams 
 		}
 		deployments = append(deployments, cutFacet)
 
-		owner := d.box.Config.Accounts["anvil"].Address.Hex()
+		privateKey, err := d.box.Eth.HexToECDSA(d.box.Config.PrivateKey[2:])
+		if err != nil {
+			return fmt.Errorf("failed to convert private key string: %v", err)
+		}
+		
+		owner := crypto.PubkeyToAddress(privateKey.PublicKey).Hex()
 		diamond, err := d.box.deployContract(d.box.Contracts["diamond"], owner, cutFacet.Address.Hex())
 		if err != nil {
 			return fmt.Errorf("failed to deploy the 'diamond' contract: %v", err)

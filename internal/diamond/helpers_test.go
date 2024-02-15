@@ -38,8 +38,8 @@ func SetupBox() (*DiamondBox, error) {
 		Contracts: map[string]ContractMetadata{},
 	}
 
-	for contractIdentifier, contractConfig := range testConfig.Contracts {
-		contractMetadata, err := GetContractMetadataByFile(contractConfig.MetadataFilePath)
+	for contractIdentifier, metadataPath := range testConfig.Metadata {
+		contractMetadata, err := GetContractMetadataByFile(metadataPath)
 		if err != nil {
 			return nil, err
 		}
@@ -52,7 +52,7 @@ func SetupBox() (*DiamondBox, error) {
 	chainId := big.NewInt(-1)
 	box.Eth.ChainId = chainId
 
-	hexkey := testConfig.Accounts["anvil"].PrivateKey[2:]
+	hexkey := testConfig.PrivateKey[2:]
 	mockEth.On("HexToECDSA", hexkey).Return(&ecdsa.PrivateKey{}, nil)
 	privateKey, _ := mockEth.HexToECDSA(hexkey)
 

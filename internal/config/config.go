@@ -9,20 +9,11 @@ import (
 	"github.com/knadh/koanf/providers/file"
 )
 
-type EOA struct {
-	PrivateKey string         `koanf:"private_key"`
-	Address    common.Address `koanf:"address"`
-}
-
-type ContractConfig struct {
-	Address          string `koanf:"address"`
-	MetadataFilePath string `koanf:"metadata"`
-}
-
 type Config struct {
-	Accounts  map[string]EOA            `koanf:"eoa"`
-	RPC       map[string]string         `koanf:"rpc"`
-	Contracts map[string]ContractConfig `koanf:"contracts"`
+	PrivateKey string `koanf:"private_key"`
+	RPC      map[string]string    `koanf:"rpc"`
+	Metadata map[string]string `koanf:"metadata"`
+	DiamondAddress common.Address `koanf:"diamond_address"`
 }
 
 func LoadConfig(path string) (Config, error) {
@@ -43,7 +34,7 @@ func LoadConfig(path string) (Config, error) {
 func (c *Config) ValidateStandardContracts() error {
 	standardContracts := []string{"diamond", "diamond_init", "cut_facet", "loupe_facet"}
 	for _, contract := range standardContracts {
-		if _, ok := c.Contracts[contract]; !ok {
+		if _, ok := c.Metadata[contract]; !ok {
 			return fmt.Errorf("missing mandatory ERC-2535 contract: %s", contract)
 		}
 	}

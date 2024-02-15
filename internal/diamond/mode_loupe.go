@@ -72,8 +72,7 @@ func NewLoupeMode(box *DiamondBox) Mode {
 
 	commands.SubCommands = append(commands.SubCommands, defaultCommands.SubCommands...)
 
-	diamondAddress := common.HexToAddress(box.Config.Contracts["diamond"].Address)
-	loupeContract := bind.NewBoundContract(diamondAddress, box.Contracts["loupe_facet"].ABI,
+	loupeContract := bind.NewBoundContract(box.Config.DiamondAddress, box.Contracts["loupe_facet"].ABI,
 		box.Eth.Client, box.Eth.Client, box.Eth.Client)
 
 	return &LoupeMode{commands: commands, box: box, loupeContract: loupeContract}
@@ -278,7 +277,7 @@ func (l *LoupeMode) getFunctionIdentifiersBySelectors(selectors [][4]byte) map[s
 }
 
 func (l *LoupeMode) findMatchingIdentifier(selectorString string, selectorsMetadata map[string]string) {
-	for id := range l.box.Config.Contracts {
+	for id := range l.box.Config.Metadata {
 		contractMetadata := l.box.Contracts[id]
 
 		for identifier, selectorValue := range contractMetadata.MethodIdentifiers {

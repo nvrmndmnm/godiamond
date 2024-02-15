@@ -76,8 +76,7 @@ func NewCutMode(box *DiamondBox) Mode {
 
 	commands.SubCommands = append(commands.SubCommands, defaultCommands.SubCommands...)
 
-	diamondAddress := common.HexToAddress(box.Config.Contracts["diamond"].Address)
-	cutContract := bind.NewBoundContract(diamondAddress, box.Contracts["cut_facet"].ABI,
+	cutContract := bind.NewBoundContract(box.Config.DiamondAddress, box.Contracts["cut_facet"].ABI,
 		box.Eth.Client, box.Eth.Client, box.Eth.Client)
 
 	return &CutMode{commands: commands, box: box, cutContract: cutContract}
