@@ -72,7 +72,12 @@ func NewLoupeMode(box *DiamondBox) Mode {
 
 	commands.SubCommands = append(commands.SubCommands, defaultCommands.SubCommands...)
 
-	loupeContract := bind.NewBoundContract(box.Config.DiamondAddress, box.Contracts["loupe_facet"].ABI,
+	diamondAddress := box.Config.DiamondAddress
+	if diamondAddress == (common.Address{}) {
+		box.Sugar.Fatal("diamond address is not set in the config")
+	}
+
+	loupeContract := bind.NewBoundContract(diamondAddress, box.Contracts["loupe_facet"].ABI,
 		box.Eth.Client, box.Eth.Client, box.Eth.Client)
 
 	return &LoupeMode{commands: commands, box: box, loupeContract: loupeContract}
