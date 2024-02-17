@@ -81,7 +81,7 @@ func NewCutMode(box *DiamondBox) Mode {
 		box.Sugar.Fatal("diamond address is not set in the config")
 	}
 
-	cutContract := bind.NewBoundContract(box.Config.DiamondAddress, box.Contracts["cut_facet"].ABI,
+	cutContract := bind.NewBoundContract(diamondAddress, box.Contracts["cut_facet"].ABI,
 		box.Eth.Client, box.Eth.Client, box.Eth.Client)
 
 	return &CutMode{commands: commands, box: box, cutContract: cutContract}
