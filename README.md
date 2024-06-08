@@ -3,7 +3,6 @@
 ## Introduction
 
 Go Diamond is a CLI-tool for interacting with Diamond smart contracts based on the [ERC-2535 standard](https://eips.ethereum.org/EIPS/eip-2535). Built with Go and Foundry, it simplifies the deployment, management, and inspection of Diamond proxy contracts without requiring in-depth knowledge of the standard.  
-_The use of Javascript in this project is deliberately avoided by all means._
 
 ## Features
 
